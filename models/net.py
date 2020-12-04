@@ -1,11 +1,10 @@
 import matplotlib.pyplot as plt
-from models.utilities import custom_loss
 from tensorflow.keras import layers, Sequential
 
 
 class NeuralNet:
     def __init__(self, input_dim, output_dim, batch_size=64, n_epochs=30, valid_split=0.2,
-                 optimizer='adam', loss='mean_absolute_error', metrics=['accuracy']):
+                 optimizer='adam', loss='mean_absolute_error', metrics=None):
         self.input_dim = input_dim
         self.output_dim = output_dim
         self.hidden_dim = input_dim ** 2 // 2
@@ -33,7 +32,7 @@ class NeuralNet:
 
     def train(self, X, y):
         self.model.compile(optimizer=self.optimizer,
-                           loss=custom_loss,
+                           loss=self.loss,
                            metrics=self.metrics
                            )
 
