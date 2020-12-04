@@ -1,4 +1,5 @@
 import matplotlib.pyplot as plt
+from models.utilities import custom_loss
 from tensorflow.keras import layers, Sequential
 
 
@@ -7,6 +8,7 @@ class NeuralNet:
                  optimizer='adam', loss='mean_absolute_error', metrics=['accuracy']):
         self.input_dim = input_dim
         self.output_dim = output_dim
+        self.hidden_dim = input_dim ** 2 // 2
 
         self.batch_size = batch_size
         self.n_epochs = n_epochs
@@ -21,15 +23,17 @@ class NeuralNet:
 
     def _create_network(self):
         model = Sequential()
+        model.add(layers.Flatten())  # to vector
         model.add(layers.Dense(self.input_dim ** 2, activation="relu"))
-        model.add(layers.Dense(3, activation="relu"))
+        model.add(layers.Dense(self.hidden_dim, activation="relu"))
         model.add(layers.Dense(self.output_dim ** 2))
+        model.add(layers.Reshape((self.output_dim, self.output_dim)))  # to matrix
 
         return model
 
     def train(self, X, y):
         self.model.compile(optimizer=self.optimizer,
-                           loss=self.loss,
+                           loss=custom_loss,
                            metrics=self.metrics
                            )
 
