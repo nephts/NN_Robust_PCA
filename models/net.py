@@ -5,8 +5,8 @@ from tensorflow.keras import layers, Sequential
 class NeuralNet:
     def __init__(self, input_dim, output_dim, batch_size=64, n_epochs=30, valid_split=0.2,
                  optimizer='adam', loss='mean_absolute_error', metrics=None):
-        self.input_dim = input_dim
-        self.output_dim = output_dim
+        self.input_dim = input_dim  # n
+        self.output_dim = output_dim  # tuple (n, k)
         self.hidden_dim = input_dim ** 2 // 2
 
         self.batch_size = batch_size
@@ -25,8 +25,8 @@ class NeuralNet:
         model.add(layers.Flatten())  # to vector
         model.add(layers.Dense(self.input_dim ** 2, activation="relu"))
         model.add(layers.Dense(self.hidden_dim, activation="relu"))
-        model.add(layers.Dense(self.output_dim ** 2))
-        model.add(layers.Reshape((self.output_dim, self.output_dim)))  # to matrix
+        model.add(layers.Dense(self.output_dim[0] * self.output_dim[1]))
+        model.add(layers.Reshape(self.output_dim))  # to matrix
 
         return model
 
@@ -46,8 +46,8 @@ class NeuralNet:
         train_metrics = self.history.history[metric]
         val_metrics = self.history.history['val_' + metric]
         epochs = range(1, len(train_metrics) + 1)
-        plt.plot(epochs, train_metrics, 'bo--')
-        plt.plot(epochs, val_metrics, 'ro-')
+        plt.plot(epochs, train_metrics)
+        plt.plot(epochs, val_metrics)
         plt.title('Training and validation ' + metric)
         plt.xlabel("Epochs")
         plt.ylabel(metric)
