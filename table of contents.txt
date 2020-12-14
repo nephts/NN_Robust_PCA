@@ -1,0 +1,19 @@
+I Introcduction
+	I.1  Why RPCA?
+	I.2  Example
+	I.3  Why neural network?
+	
+II Denise
+	II.1 Generation of training data
+	II.2 newtwork architecture, loss function
+	
+III Comparism
+	III.1 pc pursuit with data from DAX 30
+	III.2 Denise with data from DAX 30
+	
+	
+IV Outlook
+	IV.1 Convolutional layer?
+	IV.2 Matrix completion?
+	IV.3 data from neurosience
+	IV.4 Examples for datas with "missing entries"
