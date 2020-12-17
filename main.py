@@ -11,7 +11,7 @@ np.random.seed(SEED)
 tf.random.set_seed(SEED)
 
 
-if __name__ == '__main__':
+def main():
     n_epochs = 300
     n_samples = 100000
     dim = 20
@@ -20,6 +20,7 @@ if __name__ == '__main__':
 
     test_set_size = int(0.2 * n_samples)
 
+    print(f'starting generating {n_samples} {dim}x{dim} matrices with rank {rank} and sparsity {sparsity}...')
     data_generator = SyntheticMatrixSet(dim=dim, rank=rank, sparsity=sparsity)
     U, L, S, M, M_tri = data_generator.generate_set(n_matrices=n_samples)
 
@@ -30,7 +31,24 @@ if __name__ == '__main__':
     tri_dim = M_tri_train.shape[1]
     net = NeuralNet(n_epochs=n_epochs, input_dim=tri_dim, output_dim=(dim, rank),
                     loss=custom_loss, metrics=[MatrixSparsity(dim=dim), MatrixRank(dim=dim)])
+    print(f'starting training for {n_epochs} epochs on {M_train.shape[0]} matrices...')
     net.train(X=M_tri_train, y=M_train)
     net.plot_metrics(metrics=['loss', 'sparsity', 'rank'])
 
-    score = net.evaluate(X_test=M_tri_test, y_test=M_test)
+    print(f'starting evaluating of the network on {M_test.shape[0]} matrices...')
+    # Evaluate
+    U_pred = net.predict(X=M_tri_test)
+
+    matrix_sparsity = MatrixSparsity(dim=dim)
+    matrix_sparsity.update_state(M_true=M_test, U_pred=U_pred)
+    sparsity_test = matrix_sparsity.result()
+    tf.print(f'Sparsity: {sparsity_test}')
+
+    matrix_rank = MatrixRank(dim=dim)
+    matrix_rank.update_state(M_true=M_test, U_pred=U_pred)
+    rank_test = matrix_rank.result()
+    tf.print(f'Sparsity: {rank_test}')
+
+
+if __name__ == '__main__':
+    main()
