@@ -4,6 +4,7 @@ import tensorflow as tf
 from models.net import NeuralNet
 from models.utilities import custom_loss
 from utilities.metrics import MatrixSparsity, MatrixRank
+from utilities.plot import plot_matrices
 from data.SyntheticMatrices import SyntheticMatrixSet
 
 SEED = 0
@@ -12,8 +13,8 @@ tf.random.set_seed(SEED)
 
 
 def main():
-    n_epochs = 300
-    n_samples = 100000
+    n_epochs = 2
+    n_samples = 1000
     dim = 20
     rank = 3
     sparsity = 0.95
@@ -48,6 +49,10 @@ def main():
     matrix_rank.update_state(M_true=M_test, U_pred=U_pred)
     rank_test = matrix_rank.result()
     tf.print(f'Sparsity: {rank_test}')
+
+    # Plot one example
+    fig = plot_matrices(M_test[0], U_pred[0])
+    fig.show()
 
 
 if __name__ == '__main__':
