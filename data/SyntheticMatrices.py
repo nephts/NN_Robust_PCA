@@ -37,12 +37,14 @@ class SyntheticMatrixSet:
         self.L_set = list()
         self.S_set = list()
         self.M_set = list()
+        self.M_tri_set = list()
 
-    def _add(self, U, L, S, M):
+    def _add(self, U, L, S, M, M_tri):
         self.U_set.append(U)
         self.L_set.append(L)
         self.S_set.append(S)
         self.M_set.append(M)
+        self.M_tri_set.append(M_tri)
 
     def generateU(self):
         # L.1.
@@ -86,10 +88,19 @@ class SyntheticMatrixSet:
         L = np.matmul(U, U.transpose())
         S = self.generateS()
         M = L + S
-        return U, L, S, M
+        M_tri = self._get_upper_triangle(M)
+        return U, L, S, M, M_tri
 
     def generate_set(self, n_matrices):
         for _ in range(n_matrices):
-            U, L, S, M = self.generate()
-            self._add(U=U, L=L, S=S, M=M)
-        return np.array(self.U_set), np.array(self.L_set), np.array(self.M_set), np.array(self.M_set)
+            U, L, S, M, M_tri = self.generate()
+            self._add(U=U, L=L, S=S, M=M, M_tri=M_tri)
+        return np.array(self.U_set), np.array(self.L_set), np.array(self.M_set), \
+               np.array(self.M_set), np.array(self.M_tri_set)
+
+    @staticmethod
+    def _get_upper_triangle(arr):
+        """
+        Returns upper triangle part of the given matrix as vector.
+        """
+        return arr[np.triu_indices(arr.shape[0])]

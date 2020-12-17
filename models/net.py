@@ -5,9 +5,8 @@ from tensorflow.keras import layers, Sequential
 class NeuralNet:
     def __init__(self, input_dim, output_dim, batch_size=64, n_epochs=30, valid_split=0.2,
                  optimizer='adam', loss='mean_absolute_error', metrics=None):
-        self.input_dim = input_dim  # n
+        self.input_dim = input_dim  # n * (n+1) / 2
         self.output_dim = output_dim  # tuple (n, k)
-        self.hidden_dim = input_dim ** 2 // 2
 
         self.batch_size = batch_size
         self.n_epochs = n_epochs
@@ -22,9 +21,9 @@ class NeuralNet:
 
     def _create_network(self):
         model = Sequential()
-        model.add(layers.Flatten())  # to vector
-        model.add(layers.Dense(self.input_dim ** 2, activation="relu"))
-        model.add(layers.Dense(self.hidden_dim, activation="relu"))
+        model.add(layers.Dense(16, activation="relu"))
+        model.add(layers.Dense(32, activation="relu"))
+        model.add(layers.Dense(64, activation="relu"))
         model.add(layers.Dense(self.output_dim[0] * self.output_dim[1]))
         model.add(layers.Reshape(self.output_dim))  # to matrix
 
@@ -41,8 +40,13 @@ class NeuralNet:
                                       epochs=self.n_epochs,
                                       validation_split=self.valid_split
                                       )
+        self.model.summary()
 
-    def plot_metric(self, metric):
+    def plot_metrics(self, metrics):
+        for metric in metrics:
+            self._plot_one_metric(metric=metric)
+
+    def _plot_one_metric(self, metric):
         train_metrics = self.history.history[metric]
         val_metrics = self.history.history['val_' + metric]
         epochs = range(1, len(train_metrics) + 1)
