@@ -1,1 +1,67 @@
-\section{Comparism}
+\newpage
+\section{Testing and Comparism}
+After the neural network has been trained with the synthetic data, as discribed in section \ref{sec:training}, it can be tested on synthetic data, where the decomposition is known by construction, aswell as on real world data. To compare the decompositions of real world data, another algorithm is needed, which calculates the decomposition of an arbitrary positive semidefinite matrix $M$ into a low rank, symmetric and positive-semidefinite matrix $L_0$ plus a sarse matrix $S_0$:
+\begin{align}
+ M = L_0 + S_0.
+\end{align}
+With \textit{Principal  Component  Pursuit} (PCP), there exists an algorithm, which, under some suitable assumptions, calculates the decomposition exactly via singular value decomposition (SVD) \cite{candes2009robust}. The assumptions and the main ideas of this algorithm is presented in the first subsection. In the second subsection the results of the decomposition of portfolio correlation matrices via the AI algorithm Denise with the results of the Principal Component  Pursuit algorithm.
+
+\subsection{The Minimization Problem solved by PCP}
+Let $M$ be a given element of $\mathbb R^{n_1\times n_2}$. $\norm \cdot_*$ denotes the nuclear norm, i.e. the sum over the singular values of a matrix $\norm M_* \defeq \sum_i \sigma_i(M)$. $\norm \cdot_1$ is the well known $\ell_1$ norm $\norm M_1 = \sum_{ij} \abs{M_{ij}}$. The PCP algorithm solves the convex optimazation problem
+\begin{align}
+ \mathrm{minimize} \quad \norm L_* + \norm S_1, \quad \text{where } L+S=M
+\end{align}
+exactly, if the the low-rank component $L_0$ fulfills a \q{incoherence} condition, and that the sparse component is \q{reasonably sparse}. The meaning of this \q{incoherence} condition for $L_0$ and the \q{reasonable} sparsity of $S_0$ is explained in \cite[section 1.3]{candes2009robust}. We summatize the main points real for quadratic matrices:
+\par
+\begin{enumerate}[label=(\roman*),ref=(\roman*)]
+ \item \label{incoherencecond} Let $U\Sigma V^\top$ the singular singular value decomposition of $L_0 \in R^{n\times n}$ with rank $k\ge n$, i.e.
+\begin{align}
+ L_0 = U\Sigma V^\top = \sum_{i=1}^k \sigma_i u_i v_i^\top,
+\end{align}
+where $U=(u_1,\dots,u_k),V=(v_1,\dots,v_k) \in \mathrm{O}(n)$, $\Sigma=\diag{\sigma_1,\dots,\sigma_r,0,\dots,0} \in \mathbb R^{n\times n}$. $\sigma_1,\dots,\sigma_k$ are the singular values and $u_i$ and $v_i$, $i=1,\dots,k$, are the left-singular and right-singular vectors for $\sigma_i$, respectively. Then the matrix $L_0$ is called incoherent, with parameter $\mu$, if
+\begin{align}
+ \max_i \norm{U e_i}^2 \ge \dfrac{\mu k}{n^2},\quad  \max_i \norm{V e_i}^2 \ge \dfrac{\mu k}{n^2}, \quad \norm{UV^\top}_\infty \ge \dfrac{\sqrt{\mu k}}{n}.
+\end{align}
+$e_i$ are the canonical basis vectors of $\mathbb R^n$. 
+ \item \label{uniformlysparse} The positions of the nonzero elements of the sparsity matrix are selected uniformly random.
+\end{enumerate}
+If \ref{incoherencecond} is fullfilled, the matrix $L_0$ is considered as not sparse. With \ref{uniformlysparse} we try to prevent, that the nonzero elements are only in one, or few columns of the sparsity matrix. For example if the entries of $S_0$ except the first column are all zero, and the first column of $S_0$ is the negative of the first column of $L_0$, then it is impossible to recover the low rank component and sparse component exactly. To avoid, such variety of possibilities for the decomposition 
+\ref{uniformlysparse} is a reasonable assumption.
+
+\subsection{PCP}
+
+\subsection{Decomposition of Portfolio Correlations from DAX 30 with PCP and Denise}
+For test purposes we applied the PCP algorithm to the empirical covariance matrix based on the prices of five share certificates of the companies Allianz, BASF Bayer, Beiersdorf and BMW  of the last six months. The following covariance matrix is obtained
+\begin{align}
+ &(\mathrm{Cov}(x_i,x_j))_{i,j} \notag \\
+ &= \begin{pmatrix} 142.67041515&  28.06338926&  30.56147946&   2.52487121&
+         31.18558268\\  28.06338926&  14.54671933& -10.75409144&  -2.97700557&
+         20.0735403 \\  30.56147946& -10.75409144&  65.84451884&  11.30075662&
+        -28.04105723\\   2.52487121&  -2.97700557&  11.30075662&  10.38498412&
+         -5.84017695\\  31.18558268&  20.0735403 & -28.04105723&  -5.84017695&
+         33.39091805 \end{pmatrix},
+\end{align}
+where $x = (x_1,\dots,x_5) =(\text{Allianz, BASF Bayer, Beiersdorf, BMW})$. The PCP algorithm returns the decompostion
+\begin{align}
+ L_0 &= \begin{pmatrix}
+       33.15288862&  19.03429426&  -2.38353047&   2.5249416 &
+         24.04138395\\
+         19.03429426&  14.54671744& -10.7540876 &  -2.97707117&
+         20.07354269\\
+         -2.38353047& -10.7540876 &  24.51612531&  11.30069593&
+        -17.99311351\\ 
+        2.5249416 &  -2.97707117&  11.30069593&   5.60790277&
+         -5.84023382\\
+         24.04138395&  20.07354269& -17.99311351&  -5.84023382&
+         28.30038404
+       \end{pmatrix},
+       \\
+S_0 &=\begin{pmatrix}109.51752654&   9.029095  &  32.94500994&   0.        &
+          7.14419873\\ 9.029095  &   0.        &  -0.        &  -0.        &
+         -0.\\ 32.94500994&  -0.        &  41.32839353&   0.        &
+        -10.04794373 \\ 0.        &  -0.        &   0.        &   4.77708135&
+          0.        \\ 7.14419873&  -0.        & -10.04794373&   0.        &
+          5.09053401
+       \end{pmatrix}.
+\end{align}
+The rank of $L_0$ is $2$. This is obviously a exact decomposition $(\mathrm{Cov}(x_i,x_j))_{i,j} = L_0 + S_0$.
