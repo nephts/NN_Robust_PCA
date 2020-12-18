@@ -18,9 +18,9 @@ class MatrixSparsity(tf.keras.metrics.Metric):
         S = M_true - L_pred
 
         # Get number of values e_ij in S with |e_ij| < eps
-        n = K.cast(K.greater(self.eps, tf.abs(S)), 'float32')
+        n = K.cast(tf.less(tf.abs(S), self.eps), 'float32')
         # Get mean over batch
-        self.sparsity = tf.divide(K.sum(tf.math.count_nonzero(n, axis=(1, 2))), self.size)
+        self.sparsity = K.mean(tf.divide(tf.math.count_nonzero(n, axis=(1, 2)), self.size))
 
     def result(self):
         return self.sparsity
