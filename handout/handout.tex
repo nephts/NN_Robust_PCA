@@ -17,8 +17,18 @@ a4paper,     %% defines the paper size: a4paper (default), a5paper, letterpaper,
 ]{scrartcl}  %% article, see KOMA documentation (scrguide.dvi)
 
 \usepackage{amsmath,stmaryrd,amsthm,amssymb} % Math packages
-
+\usepackage{mathtools}
 \usepackage{enumitem}
+
+\newcommand{\norm}[1]{\left\Vert#1\right\Vert}
+\newcommand{\abs}[1]{\lvert #1 \rvert}
+\newcommand{\diag}[1]{\mathrm{diag}(#1)}
+\newcommand*{\defeq}{\vcentcolon=}
+\newcommand*{\eqdef}{=\vcentcolon}
+\newcommand{\q}[1]{\dq#1\dq}            
+           
+
+  
 
 
 %%% graphicx: support for graphics
@@ -26,15 +36,12 @@ a4paper,     %% defines the paper size: a4paper (default), a5paper, letterpaper,
 \usepackage{caption}
 \usepackage{subcaption}
 
-\usepackage{}
-\newcommand*{\defeq}{\vcentcolon=}
-\newcommand*{\eqdef}{=\vcentcolon}
 
-  
+
 
 %%% hyperref (hyperlinks in PDF)
 \usepackage[
-    hidelinks,			 %% removes red frames in the table of contents
+    hidelinks,
     backref,                     %% adds a backlink text to the end of each item in the bibliography
     pagebackref=false,           %% if true, creates backward references as a list of page numbers in the bibliography
     colorlinks=false,            %% turn on colored links (true is better for on-screen reading, false is better for printout versions)
@@ -85,25 +92,29 @@ a4paper,     %% defines the paper size: a4paper (default), a5paper, letterpaper,
 
 \usepackage[utf8]{inputenc} % Required for inputting international characters
 \usepackage[T1]{fontenc} % Output font encoding for international characters
-\usepackage[english]{babel}
+\usepackage[english,german]{babel}
 \usepackage{csquotes}
-
+\usepackage[ cal = cm,
+             scr = euler
+           ]{mathalfa}
+           
 \numberwithin{equation}{section}
 
-\newcommand{\q}[1]{\dq#1\dq}
+
 \renewcommand\thefootnote{\textcolor{blue}{\arabic{footnote}}}
 
 
 \setlength{\parindent}{0pt}
+\setlength{\parskip}{1em}
+
 
 \begin{document}
  \selectlanguage{english}
 \pagenumbering{roman} %% small roman page numbers
-
+\setcounter{page}{0}
 %%% include the title
 \begin{titlepage}
 	\centering
-	%\includegraphics[width=0.15\textwidth]{example-image-1x1}\par\vspace{1cm}
 	{\scshape\Huge Albert-Ludwigs-Universität Freiburg \par}
 	\vspace{1,5cm}
 	{\huge\bfseries A Neural Network for RPCA\par}
@@ -112,7 +123,7 @@ a4paper,     %% defines the paper size: a4paper (default), a5paper, letterpaper,
 	{\scshape\LARGE Stochastic Machine Learning \par}
 	\vspace{10cm}
 	{\Large\itshape Eric Brunner, Aron Distelzweig, Mirko Grimm, Bastian Schnitzer, Simon Beyer\par}
-  	\vspace{3cm}
+    \vspace{2cm}
 	{\large \today\par}
 \end{titlepage}
 
@@ -135,6 +146,12 @@ a4paper,     %% defines the paper size: a4paper (default), a5paper, letterpaper,
 \input{sections/denise.tex}
 \input{sections/comparism.tex}
 \input{sections/outlook.tex}
+
+\newpage
+
+
+% \bibliographystyle{unsrt}
+\printbibliography[heading=bibintoc]
  
  
 \end{document}
