@@ -2,16 +2,24 @@ import matplotlib.pyplot as plt
 import tensorflow as tf
 
 
-def plot_matrices(M_test, U_pred):
+def plot_matrices(M_test, U_pred=None, L_pred=None):
+    if U_pred is None and L_pred is None:
+        raise ValueError('U_pred and L_pred can not be None both')
+    if U_pred is not None:
+        L_pred = tf.matmul(U_pred, tf.transpose(U_pred))
     fig, axes = plt.subplots(nrows=3, ncols=1, figsize=(3, 8))
-    L_pred = tf.matmul(U_pred, tf.transpose(U_pred))
     S_pred = M_test - L_pred
-    axes[0].imshow(M_test)
+    im = axes[0].imshow(M_test)
     axes[0].set_ylabel('M    ', fontsize='x-large', rotation=0)
-    axes[1].imshow(L_pred)
+    fig.colorbar(im, ax=axes[0])
+
+    im = axes[1].imshow(L_pred)
     axes[1].set_ylabel('L    ', fontsize='x-large', rotation=0)
-    axes[2].imshow(S_pred)
+    fig.colorbar(im, ax=axes[1])
+
+    im = axes[2].imshow(S_pred)
     axes[2].set_ylabel('S    ', fontsize='x-large', rotation=0)
+    fig.colorbar(im, ax=axes[2])
 
     for i in range(3):
         axes[i].tick_params(

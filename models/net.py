@@ -1,12 +1,16 @@
 import matplotlib.pyplot as plt
 import tensorflow as tf
+import numpy as np
 from tensorflow.keras import layers, Sequential
+from utilities.metrics import MatrixSparsity
+from utilities.plot import plot_matrices
 
 
 class NeuralNet:
-    def __init__(self, input_dim, output_dim, lr=0.001, batch_size=64, n_epochs=30, valid_split=0.2,
+    def __init__(self, dim, output_dim, lr=0.001, batch_size=64, n_epochs=30, valid_split=0.2,
                  loss='mean_absolute_error', metrics=None):
-        self.input_dim = input_dim  # n * (n+1) / 2
+        self.dim = dim
+        self.input_dim = dim * (dim + 1) / 2  # n * (n+1) / 2
         self.output_dim = output_dim  # tuple (n, k)
 
         self.batch_size = batch_size
@@ -23,9 +27,9 @@ class NeuralNet:
 
     def _create_network(self):
         model = Sequential()
-        model.add(layers.Dense(16, activation="relu"))
-        model.add(layers.Dense(32, activation="relu"))
-        model.add(layers.Dense(64, activation="relu"))
+        model.add(layers.Dense(self.dim // 2, activation="relu"))
+        model.add(layers.Dense(self.dim // 2, activation="relu"))
+        model.add(layers.Dense(self.dim // 2, activation="relu"))
         model.add(layers.Dense(self.output_dim[0] * self.output_dim[1]))
         model.add(layers.Reshape(self.output_dim))  # to matrix
 
@@ -58,11 +62,30 @@ class NeuralNet:
         plt.xlabel("Epochs")
         plt.ylabel(metric)
         plt.legend(["train_" + metric, 'val_' + metric])
+        plt.savefig(f'plots/{metric}.pdf')
         plt.show()
 
-    def evaluate(self, X_test, y_test):
-        score = self.model.evaluate(X_test, y_test, verbose=0)
-        return score
+    def evaluate(self, M_test, dim):
+        if len(M_test.shape) == 2:
+            M_test = M_test[None, :, :]
+
+        # Convert
+        M_tris = list()
+        for m in M_test:
+            tri_M = m[np.triu_indices(m.shape[0])]
+            M_tris.append(tri_M)
+        M_tris = np.array(M_tris)
+        U_pred = self.predict(X=M_tris)
+
+        matrix_sparsity = MatrixSparsity(dim=dim)
+        matrix_sparsity.update_state(M_true=M_test, U_pred=U_pred)
+        sparsity_test = matrix_sparsity.result()
+
+        # Plot one example
+        fig = plot_matrices(M_test[0], U_pred=U_pred[0])
+        plt.savefig('plots/denise_output.pdf')
+        fig.show()
+        return sparsity_test, U_pred
 
     def predict(self, X):
         return self.model.predict(X)

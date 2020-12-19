@@ -9,10 +9,13 @@ class MatrixSparsity(tf.keras.metrics.Metric):
         self.size = dim ** 2
         self.eps = eps
 
-    def update_state(self, M_true, U_pred, sample_weight=None):
+    def update_state(self, M_true, U_pred=None, L_pred=None, sample_weight=None):
+        if U_pred is None and L_pred is None:
+            raise ValueError('U_pred and L_pred can not be None both')
         # Compute L = UU^T
-        U_pred_t = K.permute_dimensions(U_pred, pattern=(0, 2, 1))
-        L_pred = K.batch_dot(U_pred, U_pred_t)
+        if U_pred is not None:
+            U_pred_t = K.permute_dimensions(U_pred, pattern=(0, 2, 1))
+            L_pred = K.batch_dot(U_pred, U_pred_t)
 
         # Compute S = M - L
         S = M_true - L_pred

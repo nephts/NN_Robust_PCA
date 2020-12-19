@@ -4,7 +4,7 @@ import numpy as np
 
 class Psychdata:
     def __init__(self):
-        self.df= pd.read_csv("bfi.csv")
+        self.df= pd.read_csv("psychdata/bfi.csv")
         
     def get_raw_data(self):
         return self.df
