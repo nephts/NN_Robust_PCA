@@ -1,6 +1,17 @@
 \newpage
-\section{Outlook}
+\section{Outlook}\label{sec:outlook}
+
+In this section we give a brief outlook on some ideas which we like further devolop in the course of this project.
+
+
 \subsection{Convolutional Layer}
-\subsection{Matrix Completion}
+It is clear that the described neural network ansatz (see section \ref{sec:algorithm}), once trained yields a very fast and robust methodology to solve the RPCA problem, compared to state-of-the-art algorithms (as for example the PCP discussed in \ref{sec:pcp}). However, the training and the generation of training data can be computationally quite demanding for large matrices. One the one hand, larger matrices require much larger training data sets for obtaining reasonable generalization properties. On the other hand, the necessary network parameters in the dense network implementation will also scale up. To circumvent this scaling problem (at least on the training side) we would like to compare the current dense network topology to a more sparse one, building on convolutionary layers. These architectures, typically, exhibit much fewer trainable parameters then dense networks.
+
+Convolutionary networks are usually used in image recognition. In such scenarios one typically expects strong correlations within the data (pixels of the images), since usually some red pixels will be most probable surrounded by further red ones. By exploiting these correlations, a convolutionary network (with much fewer parameters then a dense one) is often able to perform equally well while allowing for much faster training. Although the considered corrupted SPD-matrices at input might not boast a similar structure then images, the positive definite character also will lead to correlations between the individual matrix entries. Therefore, it seems reasonable to test a sparser convolutionary network architecture also in this setting.
+
+
+
+\subsection{Matrix Completion (Data with \q{Missing Entries})}
+In natural science one often is confronted with incomplete knowledge of the investigated systems in form of measurement errors and imprecision.
+
 \subsection{Data from Neuroscience}
-\subsection{Examples for Data with \q{Missing Entries}}

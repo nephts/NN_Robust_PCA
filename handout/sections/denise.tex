@@ -1,33 +1,28 @@
-\section{Denise}
+\section{Denise}\label{sec:algorithm}
 
-We consider $\mathbb{S}_n \subseteq \mathbb{R}^{n \times n}$ to be the set of $n$-by-$n$ symmetric matrices and $P_n\subseteq \mathbb{S}_n$ to be the subset of positive semi-definite matrices and $P_{k,n} \subseteq P_n$ the subset of matrices with rank at most $k$. As the input of our deep neuronal network we consider a Matrix $M = [M_{i,j}]_{i,j} \in P_n$. 
-\newline
+We consider $\mathbb{S}_n \subseteq \mathbb{R}^{n \times n}$ to be the set of $n$-by-$n$ symmetric matrices and $P_n\subseteq \mathbb{S}_n$ to be the subset of positive semi-definite matrices and $P_{k,n} \subseteq P_n$ the subset of matrices with rank at most $k$. As the input of our deep neuronal network we consider a Matrix $M = [M_{i,j}]_{i,j} \in P_n$. $M$ is to be decomposed as a sum $M = L + S$ where $L = [L_{i,j}]_{i,j} \in P_{k,n}$ is of rank at most $k$ and a sparse matrix $S = [S_{i,j}]_{i,j} \in P_n$. Since $L$ is assumed to be symmetric, by the Cholesky decomposition, we can represent it as $L=UU^T$, where $U = [U_{i,j}]_{i,j} \in \mathbb{R}^{n \times k}$. Therefore $M$ can be expressed as $M = UU^T + S$.
 
-The matrix $M$ is to be decomposed as a sum $M = L + S$ where $L = [L_{i,j}]_{i,j} \in P_{k,n}$ is of rank at most $k$ and a sparse matrix $S = [S_{i,j}]_{i,j} \in P_n$.
-\newline
+\paragraph{Loss function}
+We input $M$ in the neural network, which should faithfully output the low rank matrix $U$. Hence, we want to minimize the difference between $M$ and $UU^T$, which is equal to $S$. A convenient choice of loss-function for the considered neural network is, therefore, given by the $l_1$-matrix-norm of $S$
+\[
+\Vert UU^T - M \Vert_{l_1} = \Vert S \Vert_{l_1}
+\]
+The $l_1$-norm is a common choice to guarantee sparsity of $S$.
 
-Considering the loss-function of the neural network we look at the $l_1$-matrix-norm of $S$ since $S$ should be sparse and therefore $\Vert S \Vert_{l_1}$ reduces along the sparsity of $S$.
-\newline
-
-Since $L$ is assumed to be symmetric by the Cholesky decomposition we can represent it as $L=UU^T$, where $U = [U_{i,j}]_{i,j} \in \mathbb{R}^{n \times k}$. Therefore $M$ can be expressed as $M = UU^T + S$.
-\newline
-
-We now calculate $U$ as the output of a multi-layer feed-forward neural network where the loss-function to minimize is $\Vert UU^T - M \Vert_{l_1} = \Vert S \Vert_{l_1}$.
-\newline
-
-As the matrix M is symmetric, we can reduce the input from $n^2$ to $n(n + 1)/2$ by taking the triangular lower matrix of $M$. The lower matrix is then transformed into a vector using the operator h
-\newline
-
-\[h: S^n \to \mathbb{R}^{n(n+1)/2}, \, M \mapsto (M_{1,1},M_{2,1},M_{2,2},\dots,M_{n,1},\dots,M_{n,n})^T\]
-
+\paragraph{Architecture}
+As the matrix M is symmetric, we can reduce the input from $n^2$ to $n(n + 1)/2$ by taking the triangular lower matrix of $M$. The lower matrix is then transformed into a vector using the operator h:
+\[
+h: S^n \to \mathbb{R}^{n(n+1)/2}, \, M \mapsto (M_{1,1},M_{2,1},M_{2,2},\dots,M_{n,1},\dots,M_{n,n})^T
+\]
 Similarly we convert the output vector of the neural network into a matrix with the operator g defined as
+\[
+g : \mathbb{R}^{nk} \to \mathbb{R}^{n \times k}, \, X \mapsto \begin{pmatrix} X_1 & \cdots & X_k \\ \vdots & & \vdots \\ X_{(n-1)k + 1} & \cdots& X_{(n-1)k+k}\end{pmatrix}
+\]
+Besides the output layer, our multi-layer feed-forward neural network $\mathcal{N}: \mathbb{R}^{n(n+1)/2} \to \mathbb{R}^{nk} $ has three hidden dense layers, each exhibiting ReLU-activation function and $n/2$ nodes. Using $h$ and $g$ the matrix $U$ is the output of the neural network $U = g(\mathcal{N}(h(M)))$ and we  get the desired matrix $L=\rho(\mathcal{N}(h(M)))$ for
+\[
+\rho : \mathbb{R}^{rd} \to P_{r,d}, X \mapsto g(X)g(X)^T
+\]
 
-\[g : \mathbb{R}^{nk} \to \mathbb{R}^{n \times k}, \, X \mapsto \begin{pmatrix} X_1 & \cdots & X_k \\ \vdots & & \vdots \\ X_{(n-1)k + 1} & \cdots& X_{(n-1)k+k}\end{pmatrix}\]
 
-Our multi-layer feed-forward neural network $\mathcal{N}: \mathbb{R}^{n(n+1)/2} \to \mathbb{R}^{nk} $ has 4 layers each with the same activation function $\sigma : \mathbb{R} \to \mathbb{R}$ that we use componentwise.
-\newline
-
-Using $h$ and $g$ the matrix $U$ is the output of the neural network $U = g(\mathcal{N}(h(M)))$ and we  get the desired matrix $L=\rho(\mathcal{N}(h(M)))$ for
-
-\[\rho : \mathbb{R}^{rd} \to P_{r,d}, X \mapsto g(X)g(X)^T\]
+\paragraph{Generation of training data}
 
