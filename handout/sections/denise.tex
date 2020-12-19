@@ -25,4 +25,17 @@ Besides the output layer, our multi-layer feed-forward neural network $\mathcal{
 
 
 \paragraph{Generation of training data}
+For the training of Denise a synthetic dataset consisting of randomly generated matrices with appropriate decomposition properties is created. In detail, we construct a sample of positive semidefinite $n$-by-$n$ matrices $M$ that can be decomposed as
+
+\[
+ M = L_0 + S_0
+\]
+
+where $L_0$ is a known matrix of rank $k_0 \leq n$ and $S_0$ a known matrix with a given sparsity $s_0$. Here, we undestand a \textit{sparse matrix} as a matrix containing a lot of zeros and define the ratio between the number of zero-valued entries and the total number of entries as its \textit{sparsity}. In the process of data generation, we follow a reverse approach by constructing first the matrices $L_0$ and $S_0$ with the required properties and merge it together to a matrix $M$ which has by definition the pursued decomposition.\\
+
+For the construction of the low-rank matrix $L_0$, we collect $nk_0$ samples of independent standard normal random variables into an $n$-by-$k_0$ matrix $U$ and set $L_0 = UU^T$. This construction scheme guarantees symmetry and positive semidefinitness of $L_0$ as well as rank $L_0$ = $k_0$.\\
+
+To construct the symmetric positive semidefinite sparse matrix $S_0$, we first take a sample of a uniformly random pair $(i,j)$ with $1 \leq i < j \leq n$ that defines four non-zero entries of an $n$-by-$n$ matrix $\tilde{S_0}$. The off-diagonal elements $(i,j)$ and $(j,i)$ are set to a value $b$ as the realization of a uniformly random variable in $[-1,1]$ while the diagonal elements $(i,i)$ and $(j,j)$ are set to a value $a$ as the realization of a uniformly random variable in $[\vert b \vert,1]$. Due to its construction $\tilde{S_0}$ is positive semidefinite. Finally, we receive the matrix $S_0$ by summing the realizations $\tilde{S_0}^{(i,j)}$ over the pairs $(i,j)$ until the pursued sparsity is reached.\\
+
+According to the described approach, we define a class \textit{SyntheticMatrixSet} which is by its methods able to create a randomly generated matrix $M$ together with $L_0$ and $S_0$ as both parts of its decomposition  $M = L_0 + S_0$ based on the userspecified arguments dimension $n$, rank $k_0$ and sparsity $s_0$. This class enables the generation of highly extensive datasets for various training purposes.
 
