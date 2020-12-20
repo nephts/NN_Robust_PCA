@@ -6,12 +6,13 @@ After the neural network has been trained with the synthetic data, as described 
 \end{align}
 With \textit{Principal  Component  Pursuit} (PCP), there exists an algorithm, which, under some suitable assumptions, calculates the decomposition exactly via singular value decomposition (SVD) \cite{candes2009robust}. The assumptions and the main ideas of this algorithm is presented in the first subsection. In the second subsection the results of the decomposition of portfolio correlation matrices via the AI algorithm Denise with the results of the Principal Component  Pursuit algorithm.
 
-\subsection{The Minimization Problem solved by PCP}\label{sec:pcp}
+\subsection{The Minimization Problem solved by PCP}\label{sec:pcpproblem}
 Let $M$ be a given element of $\mathbb R^{n_1\times n_2}$. $\norm \cdot_*$ denotes the nuclear norm, i.e. the sum over the singular values of a matrix $\norm M_* \defeq \sum_i \sigma_i(M)$. $\norm \cdot_1$ is the well known $\ell_1$ norm $\norm M_1 = \sum_{ij} \abs{M_{ij}}$. The PCP algorithm solves the convex optimazation problem
 \begin{align}
+\label{pcpoptproblem}
  \mathrm{minimize} \quad \norm L_* + \norm S_1, \quad \text{where } L+S=M
 \end{align}
-exactly, if the the low-rank component $L_0$ fulfills a \q{incoherence} condition, and that the sparse component is \q{reasonably sparse}. The meaning of this \q{incoherence} condition for $L_0$ and the \q{reasonable} sparsity of $S_0$ is explained in \cite[section 1.3]{candes2009robust}. We summarize the main points real for quadratic matrices:
+exactly, if the the low-rank component $L_0$ fulfills a \q{incoherence} condition, and that the sparse component is \q{reasonably sparse}. The meaning of this \q{incoherence} condition for $L_0$ and the \q{reasonable} sparsity of $S_0$ is explained in \cite[subsection 1.3]{candes2009robust}. We summarize the main points real for quadratic matrices:
 \par
 \begin{enumerate}[label=(\roman*),ref=(\roman*)]
  \item \label{incoherencecond} Let $U\Sigma V^\top$ the singular singular value decomposition of $L_0 \in R^{n\times n}$ with rank $k\ge n$, i.e.
@@ -28,19 +29,36 @@ $e_i$ are the canonical basis vectors of $\mathbb R^n$.
 If \ref{incoherencecond} is fulfilled, the matrix $L_0$ is considered as not sparse. With \ref{uniformlysparse} we try to prevent, that the nonzero elements are only in one, or few columns of the sparsity matrix. For example if the entries of $S_0$ except the first column are all zero, and the first column of $S_0$ is the negative of the first column of $L_0$, then it is impossible to recover the low rank component and sparse component exactly. To avoid, such variety of possibilities for the decomposition 
 \ref{uniformlysparse} is a reasonable assumption.
 
-\subsection{Evaluation of trained Denise on Financial Data}
-To get a first impression of Denise performance on real-world data, we apply Denise on a $5$-by-$5$ covariance matrix $\Sigma$ of five stocks out of DAX 30, namely Allianz, BASF Bayer, Beiersdorf and BMW. The empirical covariances are calculated based on closing prices of the aforementioned stocks within the last 6 months starting from December 11th in 2020. In total, we included the prices of 128 trading days in our calculation.\\
-
-The stock prices required to calculate the empirical covariance matrix are downloaded from \textit{Yahoo! Finance} and then transferred into a CSV file. Then the CSV file is imported into \textit{Jupyter Notebook} in order to calculate the empirical covariance matrix $\Sigma$ according to 
+\subsection{PCP Algorithm}
+\label{sec:PCP}
+In this subsection, a brief description of the PCP algorithm, which we use for comparison with Denise, is given. There are different strategies to solve the problem \eqref{pcpoptproblem} numerically. As described in \cite{candes2009robust}, we consider an \textit{augmented Lagrange multiplier}. This is why Candes et al. named this method the ALM method. \eqref{pcpoptproblem} is equivalent to the minimization of the following \textit{augmented Lagrangian}
 \begin{align}
-	\Sigma_{i,j} = Cov(X^{(i)},X^{(j)}) = \frac{1}{n-1} \sum_{k=1}^{n} (X_{k}^{(i)} - \bar{X}^{(i)}) (X_{k}^{(j)} - \bar{X}^{(j)})
+ \mathcal L(L,S,Y) = \norm L_* + \lambda \norm S_1 + \langle Y, M -L - S \rangle + \dfrac{\mu}{2} \norm{M - L - S}_F^2.
 \end{align}
-where $X_{k}^{(i)}$ is the price of the $i$-th stock at the end of the $k$-th trading day and $n$ describes the total number of analyzed trading days within the relevant time period. 
+Here $\langle \cdot, \cdot \rangle$ is defined as $\langle A , B \rangle = \trace{A^\top B}$, with real quadratic matrices $A,B$. $\norm \cdot_F$ is the Frobenius norm. One can show, that
+\begin{alignat}{2}
+ &\arg \min_S \mathcal L(L,S,Y) &&= \mathcal S_{\lambda \mu}(M-L+ \mu^{-1} Y), \\
+ &\arg \min_L \mathcal L(L,S,Y) &&= \mathcal D_\mu (M-S-\mu^{-1} Y),
+\end{alignat}
+where $\mathcal S_\tau : \mathbb R^{n \times n} \to \mathbb R^{n \times n}: (X_{ij})_{ij} \mapsto (\sgn{X_{ij}} \max \left( \abs{X_{ij}} - \tau,0 \right))_{ij}$, is the extension of the shrinkage operator in $\mathbb R$ to $\mathbb R^{n \times n}$. $\mathcal D_\tau (X)$ is defined as $\mathcal D_\tau (X) = U \mathcal S_\tau (\Sigma) V^\top$, where $U \Sigma V^\top$ is the SVD of $X$. Hence, the following algorithm, taken from \cite[29]{candes2009robust}, is productive
+\begin{enumerate}
+ \item \textbf{Initialize}: $\mathrm S_0 = Y_0 = 0,\mu >0$.
+ \item \textbf{While} not converged \textbf{do}
+    \begin{subequations}
+    \begin{alignat}{2}
+     &L_{k+1} &&= \mathcal D_\mu(M-S_k-\mu^{-1} Y_k) \\
+     &S_{k+1} &&= \mathcal S_{\lambda \mu}(M-L_{k+1} +\mu^{-1} Y_k) \\
+     &Y_{k+1} &&= Y_k + \mu(M-L_{k+1} - S_{k+1})
+    \end{alignat}
+    \end{subequations}
+ \item \textbf{Return}: L,S.
+\end{enumerate}
+With the calculations of the second step, it is avoided to solve a sequence of convex programs. To archieve good relativ accuracy, only a few iteration steps are neccessary \cite[section 3]{candes2009robust}.
 
 \subsection{Decomposition of Portfolio Correlations from DAX 30 with PCP and Denise}
 For test purposes we applied the PCP algorithm to the empirical covariance matrix based on the prices of five share certificates of the companies Allianz, BASF Bayer, Beiersdorf and BMW  of the last six months. The following covariance matrix is obtained
 \begin{align}
- &(\mathrm{Cov}(x_i,x_j))_{i,j} \notag \\
+ &(\mathrm{Corr}(x_i,x_j))_{i,j} \notag \\
  &= \begin{pmatrix} 142.67041515&  28.06338926&  30.56147946&   2.52487121&
          31.18558268\\  28.06338926&  14.54671933& -10.75409144&  -2.97700557&
          20.0735403 \\  30.56147946& -10.75409144&  65.84451884&  11.30075662&
