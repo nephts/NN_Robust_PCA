@@ -28,7 +28,14 @@ $e_i$ are the canonical basis vectors of $\mathbb R^n$.
 If \ref{incoherencecond} is fulfilled, the matrix $L_0$ is considered as not sparse. With \ref{uniformlysparse} we try to prevent, that the nonzero elements are only in one, or few columns of the sparsity matrix. For example if the entries of $S_0$ except the first column are all zero, and the first column of $S_0$ is the negative of the first column of $L_0$, then it is impossible to recover the low rank component and sparse component exactly. To avoid, such variety of possibilities for the decomposition 
 \ref{uniformlysparse} is a reasonable assumption.
 
+\subsection{Evaluation of trained Denise on Financial Data}
+To get a first impression of Denise performance on real-world data, we apply Denise on a $5$-by-$5$ covariance matrix $\Sigma$ of five stocks out of DAX 30, namely Allianz, BASF Bayer, Beiersdorf and BMW. The empirical covariances are calculated based on closing prices of the aforementioned stocks within the last 6 months starting from December 11th in 2020. In total, we included the prices of 128 trading days in our calculation.\\
 
+The stock prices required to calculate the empirical covariance matrix are downloaded from \textit{Yahoo! Finance} and then transferred into a CSV file. Then the CSV file is imported into \textit{Jupyter Notebook} in order to calculate the empirical covariance matrix $\Sigma$ according to 
+\begin{align}
+	\Sigma_{i,j} = Cov(X^{(i)},X^{(j)}) = \frac{1}{n-1} \sum_{k=1}^{n} (X_{k}^{(i)} - \bar{X}^{(i)}) (X_{k}^{(j)} - \bar{X}^{(j)})
+\end{align}
+where $X_{k}^{(i)}$ is the price of the $i$-th stock at the end of the $k$-th trading day and $n$ describes the total number of analyzed trading days within the relevant time period. 
 
 \subsection{Decomposition of Portfolio Correlations from DAX 30 with PCP and Denise}
 For test purposes we applied the PCP algorithm to the empirical covariance matrix based on the prices of five share certificates of the companies Allianz, BASF Bayer, Beiersdorf and BMW  of the last six months. The following covariance matrix is obtained
