@@ -1,6 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 import tensorflow as tf
+import csv
 
 from models.net import NeuralNet
 from models.utilities import custom_loss
@@ -27,6 +28,33 @@ def get_data(data='synthetic', dim=None, rank=None, sparsity=None, n_samples=Non
         return U, L, S, M, M_tri
 
 
+def comparison(denise, method, data, dim, M_test, n_epochs, n_samples, test_set_size, rank):
+    # DENISE
+    score, U_denise = denise.evaluate(M_test=data, dim=dim)
+    L_denise = np.matmul(U_denise[0], U_denise[0].T)
+    S_denise = data - L_denise
+    tf.print(f'Sparsity (DENISE): {score}')
+
+    if method == 'pcp':
+        L_method, S_method, (u_method, s_method, v_method) = pcp(M=data)
+    matrix_sparsity = MatrixSparsity(dim=dim)
+    matrix_sparsity.update_state(M_true=M_test, L_pred=L_method)
+    score_pcp = matrix_sparsity.result()
+    tf.print(f'Sparsity (PCP): {score_pcp}')
+
+    with open("plots/res.txt", "w") as output:
+        output.write(f"DENISE trained {n_epochs} epochs with {n_samples - test_set_size} {dim}x{dim} rank {rank} "
+                     f"matrices.\nDENISE: \n\nL: \n {str(L_denise)}\n\nS: \n{str(S_denise)}\n\n")
+        output.write("-" * 12)
+        output.write(f"\n\n{method}: \n\nL: \n{str(L_method)}\n\nS: \n{str(S_method)}\n\n")
+        output.write("-" * 12)
+        output.write(f"\n\nM: \n{str(data)}")
+
+    fig = plot_matrices(data, L_pred=L_method)
+    plt.savefig(f'plots/{method}_output.pdf')
+    fig.show()
+
+
 def main():
     data = 'synthetic'
     n_epochs = 300
@@ -50,34 +78,31 @@ def main():
     net.train(X=M_tri_train, y=M_train)
     net.plot_metrics(metrics=['loss', 'sparsity'])
 
-    # Evaluate on psychdata
-    psychdata = psych.Psychdata()
-    data = psychdata.get_corr()
-    # DENISE
-    print(f'starting evaluating of the network on {M_test.shape[0]} matrices...')
-    score, U_denise = net.evaluate(M_test=data, dim=dim)
-    L_denise = np.matmul(U_denise[0], U_denise[0].T)
-    S_denise = data - L_denise
-    tf.print(f'Sparsity (DENISE): {score}')
+    # Compare
+    ''' !!! UNCOMMENT the following code for compare on psych data !!! '''
+    # Compare on psychdata
+    # psychdata = psych.Psychdata()
+    # data = psychdata.get_corr()
+    # comparison(denise=net, method='pcp', data=data, dim=dim, M_test=M_test, n_epochs=n_epochs,
+    #           n_samples=n_samples, test_set_size=test_set_size, rank=rank)
 
-    # PCP
-    L_pcp, S_pcp, (u_pcp, s_pcp, v_pcp) = pcp(M=data)
-    matrix_sparsity = MatrixSparsity(dim=dim)
-    matrix_sparsity.update_state(M_true=M_test, L_pred=L_pcp)
-    score_pcp = matrix_sparsity.result()
-    tf.print(f'Sparsity (PCP): {score_pcp}')
-
-    with open("plots/res.txt", "w") as output:
-        output.write(f"DENISE trained {n_epochs} epochs with {n_samples - test_set_size} {dim}x{dim} rank {rank} "
-                     f"matrices.\nDENISE: \n\nL: \n {str(L_denise)}\n\nS: \n{str(S_denise)}\n\n")
-        output.write("-" * 12)
-        output.write(f"\n\nPCP: \n\nL: \n{str(L_pcp)}\n\nS: \n{str(S_pcp)}\n\n")
-        output.write("-" * 12)
-        output.write(f"\n\nM: \n{str(data)}")
-
-    fig = plot_matrices(data, L_pred=L_pcp)
-    plt.savefig('plots/pcp_output.pdf')
-    fig.show()
+    ''' !!! UNCOMMENT the following code for compare on finance data !!! '''
+    # Compare on Finance data
+    # with open('Stock prices dax 30.csv') as stockprices:
+    #     data = list(csv.reader(stockprices, delimiter=";"))
+    # data_array = np.array(data)
+    # data_only = data_array[1:data_array.shape[0], 1:6].T
+    # data_only = np.array([[float(y) for y in x] for x in data_only])
+    # Sigma = np.zeros((5, 5))
+    #
+    # for k in range(0, data_only.shape[1] - 1):
+    #     Sigma = Sigma + np.dot(np.subtract(data_only[:, k], np.mean(data_only, axis=1)).reshape((5, 1)),
+    #                            np.subtract(data_only[:, k], np.mean(data_only, axis=1)).reshape((1, 5)))
+    #
+    # Sigma = (1 / (data_only.shape[1] - 1)) * Sigma
+    #
+    # comparison(denise=net, method='pcp', data=Sigma, dim=dim, M_test=M_test, n_epochs=n_epochs,
+    #            n_samples=n_samples, test_set_size=test_set_size, rank=rank)
 
 
 if __name__ == '__main__':

@@ -1,4 +1,5 @@
 import matplotlib.pyplot as plt
+import keras
 import tensorflow as tf
 import numpy as np
 from tensorflow.keras import layers, Sequential
@@ -32,6 +33,7 @@ class NeuralNet:
         model.add(layers.Dense(self.dim // 2, activation="relu"))
         model.add(layers.Dense(self.output_dim[0] * self.output_dim[1]))
         model.add(layers.Reshape(self.output_dim))  # to matrix
+        # model.add(Shrink(self.dim))
 
         return model
 
@@ -90,3 +92,11 @@ class NeuralNet:
     def predict(self, X):
         return self.model.predict(X)
 
+
+class Shrink(keras.layers.Layer):
+    def __init__(self, dim):
+        super(Shrink, self).__init__()
+        self.dim = float(dim)
+
+    def call(self, inputs, **kwargs):
+        return tf.multiply(tf.abs(inputs) - 1/tf.sqrt(self.dim), tf.sign(inputs))
