@@ -29,13 +29,16 @@ $e_i$ are the canonical basis vectors of $\mathbb R^n$.
 If \ref{incoherencecond} is fulfilled, the matrix $L_0$ is considered as not sparse. With \ref{uniformlysparse} we try to prevent, that the nonzero elements are only in one, or few columns of the sparsity matrix. For example if the entries of $S_0$ except the first column are all zero, and the first column of $S_0$ is the negative of the first column of $L_0$, then it is impossible to recover the low rank component and sparse component exactly. To avoid, such variety of possibilities for the decomposition 
 \ref{uniformlysparse} is a reasonable assumption.
 
-\subsection{PCP Algorithm}
+\subsection{PCP Algorithm}\label{sec:pcpalgorithm}
 \label{sec:PCP}
 In this subsection, a brief description of the PCP algorithm, which we use for comparison with Denise, is given. There are different strategies to solve the problem \eqref{pcpoptproblem} numerically. As described in \cite{candes2009robust}, we consider an \textit{augmented Lagrange multiplier}. This is why Candes et al. named this method the ALM method. \eqref{pcpoptproblem} is equivalent to the minimization of the following \textit{augmented Lagrangian}
 \begin{align}
  \mathcal L(L,S,Y) = \norm L_* + \lambda \norm S_1 + \langle Y, M -L - S \rangle + \dfrac{\mu}{2} \norm{M - L - S}_F^2.
 \end{align}
-Here $\langle \cdot, \cdot \rangle$ is defined as $\langle A , B \rangle = \trace{A^\top B}$, with real quadratic matrices $A,B$. $\norm \cdot_F$ is the Frobenius norm. One can show, that
+Here $\langle \cdot, \cdot \rangle$ is defined as 
+%$\langle A , B \rangle = \trace{A^\top B}$
+$\langle A , B \rangle = \trace{A^\top B}$
+, with real quadratic matrices $A,B$. $\norm \cdot_F$ is the Frobenius norm. One can show, that
 \begin{alignat}{2}
  &\arg \min_S \mathcal L(L,S,Y) &&= \mathcal S_{\lambda \mu}(M-L+ \mu^{-1} Y), \\
  &\arg \min_L \mathcal L(L,S,Y) &&= \mathcal D_\mu (M-S-\mu^{-1} Y),
@@ -55,7 +58,12 @@ where $\mathcal S_\tau : \mathbb R^{n \times n} \to \mathbb R^{n \times n}: (X_{
 \end{enumerate}
 With the calculations of the second step, it is avoided to solve a sequence of convex programs. To archieve good relativ accuracy, only a few iteration steps are neccessary \cite[section 3]{candes2009robust}.
 
-\subsection{Decomposition of Portfolio Correlations from DAX 30 with PCP and Denise}
+\subsection{Portfolio Correlations from DAX 30 with PCP and Denise}
+
+\textcolor{red}{Sparsity-values}
+
+\textcolor{red}{Are the matrices the same as in the plot? Corr = Cov ?}
+
 For test purposes we applied the PCP algorithm to the empirical covariance matrix based on the prices of five share certificates of the companies Allianz, BASF Bayer, Beiersdorf and BMW  of the last six months. The following covariance matrix is obtained
 \begin{align}
  &(\mathrm{Corr}(x_i,x_j))_{i,j} \notag \\
@@ -90,3 +98,47 @@ S_0 &=\begin{pmatrix}109.51752654&   9.029095  &  32.94500994&   0.        &
        \end{pmatrix}.
 \end{align}
 The rank of $L_0$ is $2$. This is obviously a exact decomposition $(\mathrm{Cov}(x_i,x_j))_{i,j} = L_0 + S_0$.
+
+The comparison of the RPCA decomposition of the covariance matrix $M = Cov$ into rank $2$ matrix $L$ and sparse $S$ is show in Fig. \ref{fig:comp_finance}. As one can see, the decomposition obtained from our neural network suffers from one significant outlier (the bottom right matrix element) in $L$ as well as $S$, which is not apparent in the PCP decomposition. Due to this outlier not much structure is visible in $L$ obtained from the neural network. However, apart from the bottom right matrix elements the $S$-matrices of both methods seem to agree to some approximation (respecting the corresponding color code). This will be analyzed in more detail in future work.
+
+\begin{figure}
+	\centering
+	\includegraphics[width=0.48\textwidth]{fig/denise_output_finance.pdf}
+	\includegraphics[width=0.48\textwidth]{fig/pcp_output_finance.pdf}
+	\caption{Comparison of RPCA of the empirical $5\times 5$ covariance matrix of the prices of five share certificates (see main text) from the DAX 30. The left panel shows the resulting decomposition $M=L+S$ obtained from the neural network approach, while the right panel shows the results from PCP.}
+	\label{fig:comp_finance}
+\end{figure}
+
+
+\subsection{Covariance matrix of personality features with PCP and Denise}
+Here we compare the performance of the RPCA of our neural network approach and the benchmark PCP algorithm on personality feature obtained from \textcolor{red}{??} individuals.
+
+\textcolor{red}{which personality features}
+
+From the data we determine their empirical covariance matrix $M$. As in the previous subsection, we calculate the RPCA-decomposition $M=L + S$ by means of our neural network approach as well as by using the PCP method introduced in \ref{sec:pcpalgorithm}. The obtained low rank matrix $L$ and the sparse part $S$ containing corruptions of the input matrix are shown in Fig. \ref{fig:comp_psych}.
+
+\textcolor{red}{which rank}
+
+As in the analysis of the financial data, the neural network decomposition exhibits very few strong outliers, which suppress the visual structure of the obtained matrices $L,S$ to some extend. As before, these outliers are not present in the PCP results. Hence, the PCP-method seems to function more stable than the network ansatz. \textcolor{red}{oreover, the sparsity of $S$ obtained from PCP is lower than from the neural network decomposition, indicating a performance advantage of PCP.}
+
+The comparison of both methods, in combination with the striking results reported in \cite{herrera2020denise}, may be explained by a sub-optimal choice of network-architecture (to few nodes per hidden layer) of our network. Another source of instability might result from the small training sets or not ideally chosen hyper-parameters such as batch-size. This will be analyzed in detail in future work.
+
+
+
+
+
+\begin{figure}
+	\centering
+	\includegraphics[width=0.48\textwidth]{fig/denise_output_psych.pdf}
+	\includegraphics[width=0.48\textwidth]{fig/pcp_output_psych.pdf}
+	\caption{Comparison of RPCA of the empirical $27\times 27$ covariance matrix of 27 personality features of \textcolor{red}{???} individuals (see main text). The left panel shows the resulting decomposition $M=L+S$ obtained from the neural network approach, while the right panel shows the results from PCP.}
+	\label{fig:comp_psych}
+\end{figure}
+
+
+
+
+
+
+
+
