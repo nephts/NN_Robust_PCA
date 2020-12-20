@@ -4,11 +4,22 @@
 In this section we give a brief outlook on some ideas which we like further devolop in the course of this project.
 
 
-\subsection{Convolutional Layer}
+\subsection{Convolutional Network}
 It is clear that the described neural network ansatz (see section \ref{sec:algorithm}), once trained yields a very fast and robust methodology to solve the RPCA problem, compared to state-of-the-art algorithms (as for example the PCP discussed in \ref{sec:pcp}). However, the training and the generation of training data can be computationally quite demanding for large matrices. One the one hand, larger matrices require much larger training data sets for obtaining reasonable generalization properties. On the other hand, the necessary network parameters in the dense network implementation will also scale up. To circumvent this scaling problem (at least on the training side) we would like to compare the current dense network topology to a more sparse one, building on convolutionary layers. These architectures, typically, exhibit much fewer trainable parameters then dense networks.
 
 Convolutionary networks are usually used in image recognition. In such scenarios one typically expects strong correlations within the data (pixels of the images), since usually some red pixels will be most probable surrounded by further red ones. By exploiting these correlations, a convolutionary network (with much fewer parameters then a dense one) is often able to perform equally well while allowing for much faster training. Although the considered corrupted SPD-matrices at input might not boast a similar structure then images, the positive definite character also will lead to correlations between the individual matrix entries. Therefore, it seems reasonable to test a sparser convolutionary network architecture also in this setting.
 
+\subsection{RPCA for arbitrary matrices}
+As described in section \ref{sec:algorithm}, the RPCA of a symmetric positive semi-definite matrix $M$ is given by decomposing
+\[
+M = UU^T + S
+\]
+with a sparse matrix $S$ and a rank $k$ matrix $U\in\mathbb{R}^{n\times k}$. It is clear that this approach not directly generalizes to arbitrary matrices such as data matrices, since $UU^T$ is by definition positive semi-definite. However, any (also non-quadratic) rank k matrix $M\in\mathbb{R}^{n\times m}$ can be decomposed as $M = UV^T$ with $U\in\mathbb{R}^{n\times k}$ and $V\in\mathbb{R}^{m\times k}$. Therefore, the RPCA problem of arbitrary $M$ is given by finding a sparse matrix $S$ and rank $k$ matrices $U,V$ as above that fulfill
+\[
+M = UV^T + S \,.
+\]
+
+A first approach to this problem, based on neural networks, is to employ two collaborating networks, each similar to the network used so far. Each networks task is to learn the mapping from input matrix $M$ to low-rank $k$ matrix $U$, respectively $V$, by minimizing the $l_1$-distance $\Vert M- UV^T\Vert_{l_1}$ to ensure (as before) sparsity of $S$. The training of both networks can be accomplished in an alternating manner. E.g. we first initialize $V$ at random and train the first network to approximate $U$, while in a second step we fix the first network and its output $U$ to train the second network on the same data to output $V$. Based on this (ideally better choice of $V$) we can now repeat this procedure up to a point where both networks converged up to a reasonable degree and stabilize. The collaborative training of both network will naturally take approximately two times as long as the single network employed so far and exhibits, hence, similar computational complexity. 
 
 
 \subsection{Matrix Completion (Data with \q{Missing Entries})}
