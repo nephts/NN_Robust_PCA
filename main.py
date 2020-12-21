@@ -1,6 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 import tensorflow as tf
+import csv
 
 from models.net import NeuralNet
 from models.utilities import custom_loss
@@ -60,8 +61,8 @@ def main():
     data = 'synthetic'
     n_epochs = 300
     n_samples = 100000
-    dim = 25
-    rank = 5
+    dim = 5
+    rank = 2
     sparsity = 0.95
 
     test_set_size = int(0.2 * n_samples)
@@ -82,28 +83,28 @@ def main():
     # Compare
     # ''' !!! UNCOMMENT the following code for compare on psych data !!! '''
     # Compare on psychdata
-    psychdata = psych.Psychdata()
-    data = psychdata.get_corr()
-    comparison(denise=net, method='pcp', data=data, dim=dim, M_test=M_test, n_epochs=n_epochs,
-             n_samples=n_samples, test_set_size=test_set_size, rank=rank)
+    # psychdata = psych.Psychdata()
+    # data = psychdata.get_corr()
+    # comparison(denise=net, method='pcp', data=data, dim=dim, M_test=M_test, n_epochs=n_epochs,
+    #          n_samples=n_samples, test_set_size=test_set_size, rank=rank)
 
     ''' !!! UNCOMMENT the following code for compare on finance data !!! '''
     # Compare on Finance data
-    # with open('Stock prices dax 30.csv') as stockprices:
-    #     data = list(csv.reader(stockprices, delimiter=";"))
-    # data_array = np.array(data)
-    # data_only = data_array[1:data_array.shape[0], 1:6].T
-    # data_only = np.array([[float(y) for y in x] for x in data_only])
-    # Sigma = np.zeros((5, 5))
-    #
-    # for k in range(0, data_only.shape[1] - 1):
-    #     Sigma = Sigma + np.dot(np.subtract(data_only[:, k], np.mean(data_only, axis=1)).reshape((5, 1)),
-    #                            np.subtract(data_only[:, k], np.mean(data_only, axis=1)).reshape((1, 5)))
-    #
-    # Sigma = (1 / (data_only.shape[1] - 1)) * Sigma
-    #
-    # comparison(denise=net, method='pcp', data=Sigma, dim=dim, M_test=M_test, n_epochs=n_epochs,
-    #            n_samples=n_samples, test_set_size=test_set_size, rank=rank)
+    with open('Stock prices dax 30.csv') as stockprices:
+        data = list(csv.reader(stockprices, delimiter=";"))
+    data_array = np.array(data)
+    data_only = data_array[1:data_array.shape[0], 1:6].T
+    data_only = np.array([[float(y) for y in x] for x in data_only])
+    Sigma = np.zeros((5, 5))
+
+    for k in range(0, data_only.shape[1] - 1):
+        Sigma = Sigma + np.dot(np.subtract(data_only[:, k], np.mean(data_only, axis=1)).reshape((5, 1)),
+                               np.subtract(data_only[:, k], np.mean(data_only, axis=1)).reshape((1, 5)))
+
+    Sigma = (1 / (data_only.shape[1] - 1)) * Sigma
+
+    comparison(denise=net, method='pcp', data=Sigma, dim=dim, M_test=M_test, n_epochs=n_epochs,
+               n_samples=n_samples, test_set_size=test_set_size, rank=rank)
 
 
 if __name__ == '__main__':
