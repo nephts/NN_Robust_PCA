@@ -49,7 +49,7 @@ def comparison(denise, method, data, dim, M_test, n_epochs, n_samples, test_set_
         output.write(f"\n\n{method}: \n\nL: \n{str(L_method)}\n\nS: \n{str(S_method)}\n\n")
         output.write("-" * 12)
         output.write(f"\n\nM: \n{str(data)}\n\n")
-        output.write(f"Relative Error of S: {tf.divide(tf.norm(L_denise - L_method, ord='fro', axis=(0, 1)), tf.norm(L_method, ord='fro', axis=(0, 1)))}\n")
+        output.write(f"Relative Error of L : {tf.divide(tf.norm(L_denise - L_method, ord='fro', axis=(0, 1)), tf.norm(L_method, ord='fro', axis=(0, 1)))}\n")
         output.write(f"Relative Error of S: {tf.divide(tf.norm(S_denise - S_method, ord='fro', axis=(0, 1)), tf.norm(S_method, ord='fro', axis=(0, 1)))}\n")
 
     fig = plot_matrices(data, L_pred=L_method)
