@@ -48,7 +48,9 @@ def comparison(denise, method, data, dim, M_test, n_epochs, n_samples, test_set_
         output.write("-" * 12)
         output.write(f"\n\n{method}: \n\nL: \n{str(L_method)}\n\nS: \n{str(S_method)}\n\n")
         output.write("-" * 12)
-        output.write(f"\n\nM: \n{str(data)}")
+        output.write(f"\n\nM: \n{str(data)}\n\n")
+        output.write(f"Relative Error of S: {tf.divide(tf.norm(L_denise - L_method, ord='fro', axis=(0, 1)), tf.norm(L_method, ord='fro', axis=(0, 1)))}\n")
+        output.write(f"Relative Error of S: {tf.divide(tf.norm(S_denise - S_method, ord='fro', axis=(0, 1)), tf.norm(S_method, ord='fro', axis=(0, 1)))}\n")
 
     fig = plot_matrices(data, L_pred=L_method)
     plt.savefig(f'plots/{method}_output.pdf')
@@ -59,8 +61,8 @@ def main():
     data = 'synthetic'
     n_epochs = 300
     n_samples = 100000
-    dim = 27
-    rank = 5
+    dim = 5
+    rank = 2
     sparsity = 0.95
 
     test_set_size = int(0.2 * n_samples)
@@ -79,30 +81,30 @@ def main():
     net.plot_metrics(metrics=['loss', 'sparsity'])
 
     # Compare
-    ''' !!! UNCOMMENT the following code for compare on psych data !!! '''
+    # ''' !!! UNCOMMENT the following code for compare on psych data !!! '''
     # Compare on psychdata
     # psychdata = psych.Psychdata()
     # data = psychdata.get_corr()
     # comparison(denise=net, method='pcp', data=data, dim=dim, M_test=M_test, n_epochs=n_epochs,
-    #           n_samples=n_samples, test_set_size=test_set_size, rank=rank)
+    #          n_samples=n_samples, test_set_size=test_set_size, rank=rank)
 
     ''' !!! UNCOMMENT the following code for compare on finance data !!! '''
     # Compare on Finance data
-    # with open('Stock prices dax 30.csv') as stockprices:
-    #     data = list(csv.reader(stockprices, delimiter=";"))
-    # data_array = np.array(data)
-    # data_only = data_array[1:data_array.shape[0], 1:6].T
-    # data_only = np.array([[float(y) for y in x] for x in data_only])
-    # Sigma = np.zeros((5, 5))
-    #
-    # for k in range(0, data_only.shape[1] - 1):
-    #     Sigma = Sigma + np.dot(np.subtract(data_only[:, k], np.mean(data_only, axis=1)).reshape((5, 1)),
-    #                            np.subtract(data_only[:, k], np.mean(data_only, axis=1)).reshape((1, 5)))
-    #
-    # Sigma = (1 / (data_only.shape[1] - 1)) * Sigma
-    #
-    # comparison(denise=net, method='pcp', data=Sigma, dim=dim, M_test=M_test, n_epochs=n_epochs,
-    #            n_samples=n_samples, test_set_size=test_set_size, rank=rank)
+    with open('Stock prices dax 30.csv') as stockprices:
+        data = list(csv.reader(stockprices, delimiter=";"))
+    data_array = np.array(data)
+    data_only = data_array[1:data_array.shape[0], 1:6].T
+    data_only = np.array([[float(y) for y in x] for x in data_only])
+    Sigma = np.zeros((5, 5))
+
+    for k in range(0, data_only.shape[1] - 1):
+        Sigma = Sigma + np.dot(np.subtract(data_only[:, k], np.mean(data_only, axis=1)).reshape((5, 1)),
+                               np.subtract(data_only[:, k], np.mean(data_only, axis=1)).reshape((1, 5)))
+
+    Sigma = (1 / (data_only.shape[1] - 1)) * Sigma
+
+    comparison(denise=net, method='pcp', data=Sigma, dim=dim, M_test=M_test, n_epochs=n_epochs,
+               n_samples=n_samples, test_set_size=test_set_size, rank=rank)
 
 
 if __name__ == '__main__':
