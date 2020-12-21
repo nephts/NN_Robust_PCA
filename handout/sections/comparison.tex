@@ -71,13 +71,10 @@ where $X_{k}^{(i)}$ is the price of the $i$-th stock at the end of the $k$-th tr
 
 \subsection{Portfolio Correlations from DAX 30 with PCP and Denise}
 
-\textcolor{red}{Sparsity-values}
-
-\textcolor{red}{Are the matrices the same as in the plot? Corr = Cov ?}
 
 For test purposes we applied the PCP algorithm to the empirical covariance matrix based on the prices of five share certificates of the companies Allianz, BASF Bayer, Beiersdorf and BMW  of the last six months. The following covariance matrix is obtained
 \begin{align}
- &(\mathrm{Cov}(x_i,x_j))_{i,j} \notag \\
+ &(\mathrm{Cov}(X_i,X_j))_{i,j} \notag \\
  &= \begin{pmatrix} 142.67041515&  28.06338926&  30.56147946&   2.52487121&
          31.18558268\\  28.06338926&  14.54671933& -10.75409144&  -2.97700557&
          20.0735403 \\  30.56147946& -10.75409144&  65.84451884&  11.30075662&
@@ -85,7 +82,7 @@ For test purposes we applied the PCP algorithm to the empirical covariance matri
          -5.84017695\\  31.18558268&  20.0735403 & -28.04105723&  -5.84017695&
          33.39091805 \end{pmatrix},
 \end{align}
-where $x = (x_1,\dots,x_5) =(\text{Allianz, BASF Bayer, Beiersdorf, BMW})$. The PCP algorithm returns the decomposition
+where $(X_1,\dots,X_5) =(\text{Allianz, BASF Bayer, Beiersdorf, BMW})$. The PCP algorithm returns the decomposition
 \begin{align}
  L &= \begin{pmatrix}
        33.15288862&  19.03429426&  -2.38353047&   2.5249416 &
@@ -108,7 +105,23 @@ S &=\begin{pmatrix}109.51752654&   9.029095  &  32.94500994&   0.        &
           5.09053401
        \end{pmatrix}.
 \end{align}
-The comparison of the RPCA decomposition of the covariance matrix $M_{ij} = Cov(x_i,x_j)$ into rank $2$ matrix $L$ and sparse $S$ for both methods is show in Fig. \ref{fig:comp_finance}. As one can see, the decomposition obtained from our neural network suffers from one significant outlier (the bottom right matrix element) in $L$ as well as $S$, which is not apparent in the PCP decomposition. Due to this outlier not much structure is visible in $L$ obtained from the neural network. However, apart from the bottom right matrix elements the $S$-matrices of both methods seem to agree to some approximation (respecting the corresponding color code). This will be analyzed in more detail in future work.
+The rank of $L$ is determined by the PCP-method as $k=2$.
+
+We train the neural network on synthetic data of 80000 $5\times 5$-matrices of rank two. Training and validation loss are illustrated in Fig. \ref{fig:finance_training}. The comparison of the RPCA decomposition of the covariance matrix $M_{ij} = Cov(X_i,X_j)$ into rank $2$ matrix $L$ and sparse $S$ for both methods is show in Fig. \ref{fig:comp_finance}. As one can see, the decomposition obtained from our neural network suffers from one significant outlier (the bottom right matrix element) in $L$ as well as $S$, which is not apparent in the PCP decomposition. Due to this outlier not much structure is visible in $L$ obtained from the neural network. However, apart from the bottom right matrix elements the $S$-matrices of both methods seem to agree to some approximation (respecting the corresponding color code). As a first metric as how well the two methodologies agree, we determine the relative errors $\epsilon_\text{rel} (S_\text{PCP}, S_\text{NN}),\, \epsilon_\text{rel} (L_\text{PCP}, L_\text{NN})$ as the relative $l_2$-distance
+\begin{equation}
+\epsilon_\text{rel}(A,B) = \frac{\Vert A - B \Vert_{l_2}}{\Vert A \Vert_{l_2}}
+\end{equation}
+between $S_\text{PCP}, S_\text{NN}$, respectively between $L_\text{PCP}, L_\text{NN}$ (the PCP-, respectively neural-network-prediction for $S$ and $L$).
+\begin{equation}
+\epsilon_\text{rel}(S_\text{PCP},S_\text{NN}) = 1.66\,, \quad  \epsilon_\text{rel}(L_\text{PCP},L_\text{NN}) = 2.60 \,.
+\end{equation}
+A more detailed analysis will be postponed to future work.
+\begin{figure}
+	\centering
+	\includegraphics[width=0.6\textwidth]{fig/loss_finance.pdf}
+	\caption{Training and validation loss of the network training for finance data.}
+	\label{fig:finance_training}
+\end{figure}
 
 \begin{figure}
 	\centering
@@ -120,31 +133,35 @@ The comparison of the RPCA decomposition of the covariance matrix $M_{ij} = Cov(
 
 
 \subsection{Correlation matrix of personality features with PCP and Denise}
-Here we compare the performance of the RPCA of our neural network approach and the benchmark PCP algorithm on 25 personality self report items obtained from approximately 2800 individuals. The studied 25 personality features are grouped in the five categories agreeableness, conscientiousness, extraversion, neuroticism, and opennness, see \href{https://www.personality-project.org/r/html/bfi.html}[personality-project]. The aim of PCA is to recover these five underlying putative factors from the data.
+Here we compare the performance of the RPCA of our neural network approach and the benchmark PCP algorithm on 25 personality self report items obtained from approximately 2800 individuals. The studied 25 personality features are grouped in the five categories agreeableness, conscientiousness, extraversion, neuroticism, and openness, see \href{https://www.personality-project.org/r/html/bfi.html}[personality-project]. The aim of PCA is to recover these five underlying putative factors from the data.
 
-In this subsection we compare the performance of PCP and our neural network approach to obtain the RPCA-decomposition of the correlation matrix of the 25 personality features. The correlation is thereby defined as the normalized empirical covariance between the variables $x_i$
+In this subsection we compare the performance of PCP and our neural network approach to obtain the RPCA-decomposition of the correlation matrix of the 25 personality features. The correlations are defined as the normalized empirical covariances between the variables $x_i$
 \[
 M_{ij} = \text{Corr}(x_i,x_j) = \frac{\text{Cov}(x_i,x_j)}{\sqrt{\text{Var}(x_i) \text{Var}(x_i)}} \,.
 \]
-As in the previous subsection, we calculate the RPCA-decomposition $M=L + S$ by means of our neural network approach as well as by using the PCP method introduced in \ref{sec:pcpalgorithm}. The obtained low rank matrix $L$ and the sparse part $S$ containing corruptions of the input matrix are shown in Fig. \ref{fig:comp_psych}. The low-rank $k=10$ is determined by the PCP-algorithm, and subsequently used in the definition of the neural network.
+As in the previous subsection, we calculate the RPCA-decomposition $M=L + S$ by means of our neural network approach as well as by using the PCP method introduced in \ref{sec:pcpalgorithm}. The obtained low rank matrix $L$ and the sparse part $S$ containing corruptions of the input matrix are shown in Fig. \ref{fig:comp_psych}. The low-rank ($k=10$) is determined by the PCP-algorithm, and subsequently used in the definition of the neural network. The training performance of the neural network (training and validation loss) is depicted in Fig. \ref{fig:personality_training}. The training was performed on 80000 synthetic $25\times 25$ positive semi-definite matrices of rank $10$.
 
-As in the analysis of the financial data, the neural network decomposition exhibits very few strong outliers, which suppress the visual structure of the obtained matrices $L,S$ to some extend. As before, these outliers are not present in the PCP results. Hence, the PCP-method seems to function more stable than the network ansatz. \textcolor{red}{oreover, the sparsity of $S$ obtained from PCP is lower than from the neural network decomposition, indicating a performance advantage of PCP.}
+As in the analysis of the financial data, the neural network decomposition exhibits very few strong outliers on the diagonal, which suppress the visual structure of the obtained matrices $L,S$ to some extend. As before, these outliers are not present in the PCP results. Hence, the PCP-method seems to function more stable than the network ansatz. We quantify the discrepancy of the resulting decomposition of both approaches by their relative distances
+\begin{equation}
+\epsilon_\text{rel}(S_\text{PCP},S_\text{NN}) = 3.24 \,, \quad  \epsilon_\text{rel}(L_\text{PCP},L_\text{NN}) = 2.14 \,.
+\end{equation}
 
-\textcolor{red}{Distance between L,L S,S}
-
-\textcolor{red}{In future we will use the decomposition to determine PC and to extract $k$ specific personality features..}
-
-The comparison of both methods, in combination with the striking results reported in \cite{herrera2020denise}, may be explained by a sub-optimal choice of network-architecture (to few nodes per hidden layer) of our network. Another source of instability might result from the small training sets or not ideally chosen hyper-parameters such as batch-size. This will be analyzed in detail in future work.
-
+The comparison of both methods, in combination with the striking results reported in \cite{herrera2020denise}, may be explained by a sub-optimal choice of network-architecture (to few nodes per hidden layer) of our network. Another source of instability might result from the small training sets or not ideally chosen hyper-parameters such as batch-size. This will be analyzed in detail in future work. Moreover, we will analyze, how we can use RPCA to obtain characteristic information about the studied data. For example, it will be interesting to investigate in which way we can recover the five underlying personality categories agreeableness, conscientiousness, extraversion, neuroticism, and openness from the principal components.
 
 
+\begin{figure}
+	\centering
+	\includegraphics[width=0.6\textwidth]{fig/loss_psych.pdf}
+	\caption{Training and validation loss of the training of our neural network for the personality data. Curiously, the validation loss is always smaller then the training loss.}
+	\label{fig:personality_training}
+\end{figure}
 
 
 \begin{figure}
 	\centering
 	\includegraphics[width=0.48\textwidth]{fig/denise_output_psych.pdf}
 	\includegraphics[width=0.48\textwidth]{fig/pcp_output_psych.pdf}
-	\caption{Comparison of RPCA of the empirical $27\times 27$ covariance matrix of 27 personality features of roughly 2800 individuals (see main text). The left panel shows the resulting decomposition $M=L+S$ obtained from the neural network approach, while the right panel shows the results from PCP.}
+	\caption{Comparison of RPCA of the empirical $25\times 25$ covariance matrix of 27 personality features of roughly 2800 individuals (see main text). The left panel shows the resulting decomposition $M=L+S$ obtained from the neural network approach, while the right panel shows the results from PCP.}
 	\label{fig:comp_psych}
 \end{figure}
 
