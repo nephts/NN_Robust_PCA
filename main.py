@@ -3,12 +3,13 @@ import matplotlib.pyplot as plt
 import tensorflow as tf
 import csv
 
-from models.net import NeuralNet
+from models.net import NeuralNet, NeuralNet_SVD
 from models.utilities import custom_loss
 from utilities.metrics import MatrixSparsity
-from utilities.plot import plot_matrices
-from data.SyntheticMatrices import SyntheticMatrixSet
+from utilities.plot import plot_matrices, test_UV
+from data.SyntheticMatrices import SyntheticMatrixSet, SyntheticMatrixSet_SVD
 from pcp import pcp
+
 
 from psychdata import psych
 
@@ -26,6 +27,15 @@ def get_data(data='synthetic', dim=None, rank=None, sparsity=None, n_samples=Non
         data_generator = SyntheticMatrixSet(dim=dim, rank=rank, sparsity=sparsity)
         U, L, S, M, M_tri = data_generator.generate_set(n_matrices=n_samples)
         return U, L, S, M, M_tri
+
+    if data == 'synthetic_SVD':
+        print('dim needs to be n x m tuple')
+        n = dim[0]
+        m = dim[1]
+        print(f'starting generating {n_samples} {n}x{m} matrices with rank {rank} and sparsity {sparsity}...')
+        data_generator = SyntheticMatrixSet_SVD(dim=dim, rank=rank, sparsity=sparsity)
+        U, V, L, S, M = data_generator.generate_set(n_matrices=n_samples)
+        return U, V, L, S, M
 
 
 def comparison(denise, method, data, dim, M_test, n_epochs, n_samples, test_set_size, rank):
@@ -57,9 +67,12 @@ def comparison(denise, method, data, dim, M_test, n_epochs, n_samples, test_set_
     fig.show()
 
 
+
+
+
 def main():
     data = 'synthetic'
-    n_epochs = 300
+    n_epochs = 5
     n_samples = 100000
     dim = 5
     rank = 2
@@ -99,13 +112,41 @@ def main():
 
     for k in range(0, data_only.shape[1] - 1):
         Sigma = Sigma + np.dot(np.subtract(data_only[:, k], np.mean(data_only, axis=1)).reshape((5, 1)),
-                               np.subtract(data_only[:, k], np.mean(data_only, axis=1)).reshape((1, 5)))
+                                np.subtract(data_only[:, k], np.mean(data_only, axis=1)).reshape((1, 5)))
 
     Sigma = (1 / (data_only.shape[1] - 1)) * Sigma
 
     comparison(denise=net, method='pcp', data=Sigma, dim=dim, M_test=M_test, n_epochs=n_epochs,
-               n_samples=n_samples, test_set_size=test_set_size, rank=rank)
+                n_samples=n_samples, test_set_size=test_set_size, rank=rank)
+
+
+def main_SVD():
+    data = 'synthetic_SVD'
+    n_epochs = 5
+    iterations = 2
+    n_samples = 50000
+    dim = (5,6)
+    rank = 2
+    sparsity = 0.95
+    
+    test_set_size = int(0.2 * n_samples)
+    
+    U, V, L, S, M = get_data(data=data, dim=dim, rank=rank, sparsity=sparsity, n_samples=n_samples)
+    # Split data set.
+    U_test, V_test, L_test, S_test, M_test = U[:test_set_size], V[:test_set_size], L[:test_set_size], S[:test_set_size], M[:test_set_size]
+    U_train, V_train, L_train, S_train, M_train = U[test_set_size:], V[test_set_size:], L[test_set_size:], S[test_set_size:], M[test_set_size:]
+    
+    net = NeuralNet_SVD(rank=rank, n_epochs=n_epochs, iterations=iterations, dim=dim, batch_size=64,
+                    loss=custom_loss)
+    
+    # # Train
+    print(f'starting training for {n_epochs} epochs on {M_train.shape[0]} matrices...')
+    net.train(X=M_train, y=M_train)
+    net.plot_metrics(metrics=['loss'])
+    
+    test_UV(U_train, V_train, M_train, net, dim[0])
+    
 
 
 if __name__ == '__main__':
-    main()
+    main_SVD()
