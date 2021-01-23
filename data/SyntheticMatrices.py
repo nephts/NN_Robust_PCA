@@ -1,5 +1,7 @@
 #!/usr/bin/env python
 import numpy as np
+import pickle
+import os
 
 
 class SyntheticMatrixSet:
@@ -91,12 +93,24 @@ class SyntheticMatrixSet:
         M_tri = self._get_upper_triangle(M)
         return U, L, S, M, M_tri
 
-    def generate_set(self, n_matrices):
+    def generate_set(self, n_matrices, do_pickle=False):
         for _ in range(n_matrices):
             U, L, S, M, M_tri = self.generate()
             self._add(U=U, L=L, S=S, M=M, M_tri=M_tri)
-        return np.array(self.U_set), np.array(self.L_set), np.array(self.S_set), \
-               np.array(self.M_set), np.array(self.M_tri_set)
+        U_set = np.array(self.U_set)
+        L_set = np.array(self.L_set)
+        S_set = np.array(self.S_set)
+        M_set = np.array(self.M_set)
+        M_tri_set = np.array(self.M_tri_set)
+        if do_pickle==True:
+            N = int(n_matrices/1000)
+            path = os.path.dirname(os.path.abspath(__file__))
+            pickle.dump(U_set, open( path + '/synthetic_matrices/U_dim'+str(self.dim)+'_rank'+str(self.rank)+'_n'+str(N)+'k.p', 'wb' ) )
+            pickle.dump(L_set, open( path + '/synthetic_matrices/L_dim'+str(self.dim)+'_rank'+str(self.rank)+'_n'+str(N)+'k.p', 'wb' ) )
+            pickle.dump(S_set, open( path + '/synthetic_matrices/S_dim'+str(self.dim)+'_rank'+str(self.rank)+'_n'+str(N)+'k.p', 'wb' ) )
+            pickle.dump(M_set, open( path + '/synthetic_matrices/M_dim'+str(self.dim)+'_rank'+str(self.rank)+'_n'+str(N)+'k.p', 'wb' ) )
+            pickle.dump(M_tri_set, open( path + '/synthetic_matrices/M_tri_dim'+str(self.dim)+'_rank'+str(self.rank)+'_n'+str(N)+'k.p', 'wb' ) )
+        return U_set, L_set, S_set, M_set, M_tri_set
 
     @staticmethod
     def _get_upper_triangle(arr):
@@ -176,12 +190,23 @@ class SyntheticMatrixSet_SVD:
         M = L + S
         return U, V, L, S, M
 
-    def generate_set(self, n_matrices):
+    def generate_set(self, n_matrices, do_pickle=False):
         for _ in range(n_matrices):
             U, V, L, S, M = self.generate()
             self._add(U=U, V=V, L=L, S=S, M=M)
-        return np.array(self.U_set), np.array(self.V_set), np.array(self.L_set), np.array(self.S_set), np.array(self.M_set)
+        U_set = np.array(self.U_set)
+        V_set = np.array(self.V_set)
+        L_set = np.array(self.L_set)
+        S_set = np.array(self.S_set)
+        M_set = np.array(self.M_set)
+        if do_pickle==True:
+            N = int(n_matrices/1000)
+            path = os.path.dirname(os.path.abspath(__file__))
+            pickle.dump(U_set, open( path + '/synthetic_matrices/SVD_U_dim'+str(self.dim)+'_rank'+str(self.rank)+'_n'+str(N)+'k.p', 'wb' ) )
+            pickle.dump(V_set, open( path + '/synthetic_matrices/SVD_V_dim'+str(self.dim)+'_rank'+str(self.rank)+'_n'+str(N)+'k.p', 'wb' ) )
+            pickle.dump(L_set, open( path + '/synthetic_matrices/SVD_L_dim'+str(self.dim)+'_rank'+str(self.rank)+'_n'+str(N)+'k.p', 'wb' ) )
+            pickle.dump(S_set, open( path + '/synthetic_matrices/SVD_S_dim'+str(self.dim)+'_rank'+str(self.rank)+'_n'+str(N)+'k.p', 'wb' ) )
+            pickle.dump(M_set, open( path + '/synthetic_matrices/SVD_M_dim'+str(self.dim)+'_rank'+str(self.rank)+'_n'+str(N)+'k.p', 'wb' ) )
+        return U_set, V_set, L_set, S_set, M_set
 
     
-
-

@@ -2,6 +2,9 @@ import numpy as np
 import matplotlib.pyplot as plt
 import tensorflow as tf
 import csv
+import time
+import os
+import pickle
 
 from models.net import NeuralNet, NeuralNet_SVD
 from models.utilities import custom_loss
@@ -70,22 +73,38 @@ def comparison(denise, method, data, dim, M_test, n_epochs, n_samples, test_set_
 
 
 
-def main():
-    data = 'synthetic'
-    n_epochs = 5
-    n_samples = 100000
-    dim = 5
-    rank = 2
-    sparsity = 0.95
+def main():    
+    # Load data --------------------------------------------------------------
+    path = os.path.dirname(os.path.abspath(__file__))
+    n_samples = 1000000
+    dim = 10
+    rank = 3
+    nk = int(n_samples/1000)
+    M = pickle.load( open( path + '/data/synthetic_matrices/M_dim'+str(dim)+'_rank'+str(rank)+'_n'+str(nk)+'k.p', 'rb' ) )
+    M_tri = pickle.load( open( path + '/data/synthetic_matrices/M_tri_dim'+str(dim)+'_rank'+str(rank)+'_n'+str(nk)+'k.p', 'rb' ) )
+    S = pickle.load( open( path + '/data/synthetic_matrices/S_dim'+str(dim)+'_rank'+str(rank)+'_n'+str(nk)+'k.p', 'rb' ) )
 
+    # Split data set ---------------------------------------------------------
     test_set_size = int(0.2 * n_samples)
+    S_test, M_test, M_tri_test = S[:test_set_size], M[:test_set_size], M_tri[:test_set_size]
+    S_train, M_train, M_tri_train = S[test_set_size:], M[test_set_size:], M_tri[test_set_size:]
+    
+    # # Generate data ----------------------------------------------------------
+    # data = 'synthetic'
+    # n_samples = 10000
+    # dim = 5
+    # rank = 2
+    # sparsity = 0.95
+    # U, L, S, M, M_tri = get_data(data=data, dim=dim, rank=rank, sparsity=sparsity, n_samples=n_samples)
+    
+    # # Split data set ---------------------------------------------------------
+    # test_set_size = int(0.2 * n_samples)
+    # U_test, L_test, S_test, M_test, M_tri_test = U[:test_set_size], L[:test_set_size], S[:test_set_size], M[:test_set_size], M_tri[:test_set_size]
+    # U_train, L_train, S_train, M_train, M_tri_train = U[test_set_size:], L[test_set_size:], S[test_set_size:], M[test_set_size:], M_tri[test_set_size:]
 
-    U, L, S, M, M_tri = get_data(data=data, dim=dim, rank=rank, sparsity=sparsity, n_samples=n_samples)
-    # Split data set.
-    U_test, L_test, S_test, M_test, M_tri_test = U[:test_set_size], L[:test_set_size], S[:test_set_size], M[:test_set_size], M_tri[:test_set_size]
-    U_train, L_train, S_train, M_train, M_tri_train = U[test_set_size:], L[test_set_size:], S[test_set_size:], M[test_set_size:], M_tri[test_set_size:]
-
-    net = NeuralNet(n_epochs=n_epochs, dim=dim, output_dim=(dim, rank),
+    # Network
+    n_epochs = 2
+    net = NeuralNet(n_epochs=n_epochs, dim=dim, output_dim=(dim, rank), batch_size=64,
                     loss=custom_loss, metrics=[MatrixSparsity(dim=dim)])
 
     # Train
@@ -101,30 +120,30 @@ def main():
     # comparison(denise=net, method='pcp', data=data, dim=dim, M_test=M_test, n_epochs=n_epochs,
     #          n_samples=n_samples, test_set_size=test_set_size, rank=rank)
 
-    ''' !!! UNCOMMENT the following code for compare on finance data !!! '''
-    # Compare on Finance data
-    with open('Stock prices dax 30.csv') as stockprices:
-        data = list(csv.reader(stockprices, delimiter=";"))
-    data_array = np.array(data)
-    data_only = data_array[1:data_array.shape[0], 1:6].T
-    data_only = np.array([[float(y) for y in x] for x in data_only])
-    Sigma = np.zeros((5, 5))
+    # ''' !!! UNCOMMENT the following code for compare on finance data !!! '''
+    # # Compare on Finance data
+    # with open('Stock prices dax 30.csv') as stockprices:
+    #     data = list(csv.reader(stockprices, delimiter=";"))
+    # data_array = np.array(data)
+    # data_only = data_array[1:data_array.shape[0], 1:6].T
+    # data_only = np.array([[float(y) for y in x] for x in data_only])
+    # Sigma = np.zeros((5, 5))
 
-    for k in range(0, data_only.shape[1] - 1):
-        Sigma = Sigma + np.dot(np.subtract(data_only[:, k], np.mean(data_only, axis=1)).reshape((5, 1)),
-                                np.subtract(data_only[:, k], np.mean(data_only, axis=1)).reshape((1, 5)))
+    # for k in range(0, data_only.shape[1] - 1):
+    #     Sigma = Sigma + np.dot(np.subtract(data_only[:, k], np.mean(data_only, axis=1)).reshape((5, 1)),
+    #                             np.subtract(data_only[:, k], np.mean(data_only, axis=1)).reshape((1, 5)))
 
-    Sigma = (1 / (data_only.shape[1] - 1)) * Sigma
+    # Sigma = (1 / (data_only.shape[1] - 1)) * Sigma
 
-    comparison(denise=net, method='pcp', data=Sigma, dim=dim, M_test=M_test, n_epochs=n_epochs,
-                n_samples=n_samples, test_set_size=test_set_size, rank=rank)
+    # comparison(denise=net, method='pcp', data=Sigma, dim=dim, M_test=M_test, n_epochs=n_epochs,
+    #             n_samples=n_samples, test_set_size=test_set_size, rank=rank)
 
 
 def main_SVD():
     data = 'synthetic_SVD'
     n_epochs = 5
     iterations = 2
-    n_samples = 50000
+    n_samples = 500
     dim = (5,6)
     rank = 2
     sparsity = 0.95
@@ -146,7 +165,33 @@ def main_SVD():
     
     test_UV(U_train, V_train, M_train, net, dim[0])
     
+def main_generate_trainings_data():
+    for rank in range(6,11):
+        print(rank)
+        dim = 10
+        # rank = 2
+        sparsity = 0.95
+        n_samples = 1000000
+        
+        data_generator = SyntheticMatrixSet(dim=dim, rank=rank, sparsity=sparsity)
+        t = time.time()
+        U, L, S, M, M_tri = data_generator.generate_set(n_matrices=n_samples, do_pickle=True)
+        print(time.time()-t)
 
 
 if __name__ == '__main__':
-    main_SVD()
+    main()
+    # main_SVD()
+    # main_generate_trainings_data()
+    
+                      
+                      
+                      
+                      
+                      
+                      
+                      
+                      
+                      
+                      
+                      
