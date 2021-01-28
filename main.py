@@ -76,11 +76,11 @@ def comparison(denise, method, data, dim, M_test, n_epochs, n_samples, test_set_
 def main():    
     # Load data --------------------------------------------------------------
     path = os.path.dirname(os.path.abspath(__file__))
-    n_epochs = 2
+    n_epochs = 300
     n_samples = 1000000
     dim = 25
     rank = 5
-    load_weights = False
+    load_weights = True
     save_weights = False
     weights_path = f'models/{dim}_{rank}_{n_samples}_{n_epochs}_weights.h5'
     nk = int(n_samples/1000)
@@ -117,7 +117,6 @@ def main():
         net.plot_metrics(metrics=['loss', 'sparsity'])
     else:
         print(f'load stored network trained for {n_epochs} epochs on {M_train.shape[0]} matrices...')
-        net.compile()
         net.load_weights(weights_path)
     if save_weights:
         net.save_weights(weights_path)
