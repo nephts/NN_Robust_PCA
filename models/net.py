@@ -1,6 +1,5 @@
 import matplotlib.pyplot as plt
 import tensorflow as tf
-import keras
 import numpy as np
 from tensorflow.keras import layers, Sequential, Input, Model, initializers
 from tensorflow.keras.layers import Reshape, Dense, Flatten
@@ -151,9 +150,7 @@ class NeuralNet_SVD:
         U = Dense(2*self.n*self.m, activation='relu', name='U1')(UV)
         U = Dense(self.n*self.m//2, activation='relu',name='U2')(U)
         U = Dense(2*self.n*self.m, activation='relu',name='U3')(U)
-        # print(U3.shape)
         U = Dense(self.output_dim_U[0] * self.output_dim_U[1], name='U4')(U)
-        # print(U4.shape)
         U = Reshape(self.output_dim_U)(U)
 
         V = Dense(2*self.n*self.m, bias_initializer="zeros", activation='relu', name='V1')(UV)

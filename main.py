@@ -152,8 +152,8 @@ def main():
 def main_SVD():
     data = 'synthetic_SVD'
     n_epochs = 5
-    iterations = 2
-    n_samples = 500
+    iterations = 3
+    n_samples = 1500
     dim = (5,6)
     rank = 2
     sparsity = 0.95
@@ -171,7 +171,7 @@ def main_SVD():
     # # Train
     print(f'starting training for {n_epochs} epochs on {M_train.shape[0]} matrices...')
     net.train(X=M_train, y=M_train)
-    net.plot_metrics(metrics=['loss'])
+    net.plot_metrics(metrics=['loss', 'sparsity'])
     
     test_UV(U_train, V_train, M_train, net, dim[0])
     
@@ -181,7 +181,7 @@ def main_generate_trainings_data():
         dim = 25
         # rank = 2
         sparsity = 0.95
-        n_samples = 5000000
+        n_samples = 50000
         
         data_generator = SyntheticMatrixSet(dim=dim, rank=rank, sparsity=sparsity)
         t = time.time()
@@ -191,8 +191,8 @@ def main_generate_trainings_data():
 
 if __name__ == '__main__':
     # main()
-    # main_SVD()
-    main_generate_trainings_data()
+    main_SVD()
+    # main_generate_trainings_data()
     
                       
                       
