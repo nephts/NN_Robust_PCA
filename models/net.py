@@ -1,5 +1,6 @@
 import matplotlib.pyplot as plt
 import tensorflow as tf
+import keras
 import numpy as np
 from tensorflow.keras import layers, Sequential, Input, Model, initializers
 from tensorflow.keras.layers import Reshape, Dense, Flatten
@@ -32,26 +33,27 @@ class NeuralNet:
         self.optimizer = tf.keras.optimizers.Adam(learning_rate=self.lr)
         self.loss = loss
         self.metrics = metrics
-        self.model = self._create_network()
+        self._create_network()
 
         self.history = None
 
     def _create_network(self):
-        model = Sequential()
-        model.add(layers.Dense(self.dim // 2, activation="relu"))
-        model.add(layers.Dense(self.dim // 2, activation="relu"))
-        model.add(layers.Dense(self.dim // 2, activation="relu"))
-        model.add(layers.Dense(self.output_dim[0] * self.output_dim[1]))
-        model.add(layers.Reshape(self.output_dim))  # to matrix
+        self.model = Sequential()
+        self.model.add(layers.Dense(self.dim // 2, activation="relu"))
+        self.model.add(layers.Dense(self.dim // 2, activation="relu"))
+        self.model.add(layers.Dense(self.dim // 2, activation="relu"))
+        self.model.add(layers.Dense(self.output_dim[0] * self.output_dim[1]))
+        self.model.add(layers.Reshape(self.output_dim))  # to matrix
         # model.add(Shrink(self.dim))
 
-        return model
-
-    def train(self, X, y):
+    def compile(self):
         self.model.compile(optimizer=self.optimizer,
                            loss=self.loss,
                            metrics=self.metrics
                            )
+
+    def train(self, X, y):
+        self.compile()
 
         self.history = self.model.fit(X, y,
                                       batch_size=self.batch_size,
@@ -59,6 +61,14 @@ class NeuralNet:
                                       validation_split=self.valid_split,
                                       )
         self.model.summary()
+
+    def save_weights(self, path):
+        self.model.save_weights(filepath=path)
+
+    def load_weights(self, path):
+        x = np.zeros((1, int(self.input_dim)))
+        self.model(x)
+        self.model.load_weights(path)
 
     def plot_metrics(self, metrics):
         for metric in metrics:
