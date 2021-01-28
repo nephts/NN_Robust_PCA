@@ -1,5 +1,6 @@
 import tensorflow.keras.backend as K
 import tensorflow as tf
+import numpy as np
 
 def custom_loss(M_true, U_pred):
     """
@@ -22,4 +23,18 @@ def custom_loss_UV(n):
    
     # Return a function
     return loss
+
+def get_eigenvalues_and_vectors(U,V=None):
+    e_val_U = np.linalg.norm(U, axis=0)**2
+    e_vec_U = U / (e_val_U)**0.5
+    if V is not None:
+        e_val_V = np.linalg.norm(V, axis=0)**2
+        e_vec_V = U / (e_val_V)**0.5
+        return e_val_U, e_val_V, e_vec_U, e_vec_V
+    return e_val_U, e_vec_U
+
+
+
+
+
 

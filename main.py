@@ -166,12 +166,12 @@ def main_SVD():
     test_UV(U_train, V_train, M_train, net, dim[0])
     
 def main_generate_trainings_data():
-    for rank in range(6,11):
+    for rank in range(5,6):
         print(rank)
-        dim = 10
+        dim = 25
         # rank = 2
         sparsity = 0.95
-        n_samples = 1000000
+        n_samples = 5000000
         
         data_generator = SyntheticMatrixSet(dim=dim, rank=rank, sparsity=sparsity)
         t = time.time()
@@ -180,9 +180,9 @@ def main_generate_trainings_data():
 
 
 if __name__ == '__main__':
-    main()
+    # main()
     # main_SVD()
-    # main_generate_trainings_data()
+    main_generate_trainings_data()
     
                       
                       
