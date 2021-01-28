@@ -4,10 +4,10 @@ import numpy as np
 
 
 def plot_matrices(M_test, U_pred=None, L_pred=None):
-    # if U_pred is None and L_pred is None:
-    #     raise ValueError('U_pred and L_pred can not be None both')
-    # if U_pred is not None:
-    #     L_pred = tf.matmul(U_pred, tf.transpose(U_pred))
+    if U_pred is None and L_pred is None:
+        raise ValueError('U_pred and L_pred can not be None both')
+    if U_pred is not None:
+        L_pred = tf.matmul(U_pred, tf.transpose(U_pred))
     fig, axes = plt.subplots(nrows=3, ncols=1, figsize=(3, 8))
     S_pred = M_test - L_pred
     im = axes[0].imshow(M_test)

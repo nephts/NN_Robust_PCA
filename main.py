@@ -49,7 +49,7 @@ def comparison(denise, method, data, dim, M_test, n_epochs, n_samples, test_set_
     tf.print(f'Sparsity (DENISE): {score}')
 
     if method == 'pcp':
-        L_method, S_method, (u_method, s_method, v_method) = pcp(M=data)
+        L_method, S_method, (u_method, s_method, v_method) = pcp(M=data, mu=0.055)
     matrix_sparsity = MatrixSparsity(dim=dim)
     matrix_sparsity.update_state(M_true=M_test, L_pred=L_method)
     score_pcp = matrix_sparsity.result()
@@ -76,9 +76,13 @@ def comparison(denise, method, data, dim, M_test, n_epochs, n_samples, test_set_
 def main():    
     # Load data --------------------------------------------------------------
     path = os.path.dirname(os.path.abspath(__file__))
+    n_epochs = 300
     n_samples = 1000000
-    dim = 10
-    rank = 3
+    dim = 25
+    rank = 5
+    load_weights = True
+    save_weights = False
+    weights_path = f'models/{dim}_{rank}_{n_samples}_{n_epochs}_weights.h5'
     nk = int(n_samples/1000)
     M = pickle.load( open( path + '/data/synthetic_matrices/M_dim'+str(dim)+'_rank'+str(rank)+'_n'+str(nk)+'k.p', 'rb' ) )
     M_tri = pickle.load( open( path + '/data/synthetic_matrices/M_tri_dim'+str(dim)+'_rank'+str(rank)+'_n'+str(nk)+'k.p', 'rb' ) )
@@ -103,22 +107,28 @@ def main():
     # U_train, L_train, S_train, M_train, M_tri_train = U[test_set_size:], L[test_set_size:], S[test_set_size:], M[test_set_size:], M_tri[test_set_size:]
 
     # Network
-    n_epochs = 2
     net = NeuralNet(n_epochs=n_epochs, dim=dim, output_dim=(dim, rank), batch_size=64,
                     loss=custom_loss, metrics=[MatrixSparsity(dim=dim)])
 
-    # Train
-    print(f'starting training for {n_epochs} epochs on {M_train.shape[0]} matrices...')
-    net.train(X=M_tri_train, y=M_train)
-    net.plot_metrics(metrics=['loss', 'sparsity'])
+    # Train or load weights
+    if not load_weights:
+        print(f'starting training for {n_epochs} epochs on {M_train.shape[0]} matrices...')
+        net.train(X=M_tri_train, y=M_train)
+        net.plot_metrics(metrics=['loss', 'sparsity'])
+    else:
+        print(f'load stored network trained for {n_epochs} epochs on {M_train.shape[0]} matrices...')
+        net.load_weights(weights_path)
+    if save_weights:
+        net.save_weights(weights_path)
+
 
     # Compare
-    # ''' !!! UNCOMMENT the following code for compare on psych data !!! '''
+    ''' !!! UNCOMMENT the following code for compare on psych data !!! '''
     # Compare on psychdata
-    # psychdata = psych.Psychdata()
-    # data = psychdata.get_corr()
-    # comparison(denise=net, method='pcp', data=data, dim=dim, M_test=M_test, n_epochs=n_epochs,
-    #          n_samples=n_samples, test_set_size=test_set_size, rank=rank)
+    psychdata = psych.Psychdata()
+    data = psychdata.get_corr()
+    comparison(denise=net, method='pcp', data=data, dim=dim, M_test=M_test, n_epochs=n_epochs,
+             n_samples=n_samples, test_set_size=test_set_size, rank=rank)
 
     # ''' !!! UNCOMMENT the following code for compare on finance data !!! '''
     # # Compare on Finance data
