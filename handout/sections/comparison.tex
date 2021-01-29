@@ -59,15 +59,15 @@ where $\mathcal S_\tau : \mathbb R^{n \times n} \to \mathbb R^{n \times n}: (X_{
 With the calculations of the second step, it is avoided to solve a sequence of convex programs. To archieve good relativ accuracy, only a few iteration steps are neccessary \cite[section 3]{candes2009robust}.
 
 \subsection{Evaluation of trained Denise on Financial Data}
-To get a first impression of Denise performance on real-world data, we apply Denise on a $5$-by-$5$ covariance matrix $\Sigma$ of five stocks out of DAX 30, namely Allianz, BASF Bayer, Beiersdorf and BMW. The empirical covariances are calculated based on closing prices of the aforementioned stocks within the last 6 months starting from December 11th in 2020. In total, we included the prices of 128 trading days in our calculation.\\
+To get a first impression of Denise performance on real-world data, we apply Denise on a set of $10$-by-$10$ correlation matrices of ten stocks out of DAX 30, namely Allianz, BASF, Bayer, Beiersdorf, BMW, Continental, Siemens, Merck, Daimler, VW. As a data basis, we exploit the price data of the aforementioned stocks from the last 2 years, starting from January 15th in 2021. The empirical correlation matrices are determined retrospectively with an offset of one day, while the correlations in time step $n$ are calculated based on closing prices within the last 35 days. In the end, we obtain 472 correlation matrices $\mathbf{R}^{(n)}, n = 1, 2, ... , 472, $ for further numerical tests by this approach.\\
 
-The stock prices required to calculate the empirical covariance matrix are downloaded from \textit{Yahoo! Finance} and then transferred into a CSV file. Then the CSV file is imported into \textit{Jupyter Notebook} in order to calculate the empirical covariance matrix $\Sigma$ according to 
+The stock prices required to calculate the empirical correlation matrices are downloaded from \textit{Yahoo! Finance} and then transferred into a CSV file. This CSV file is imported into \textit{Jupyter Notebook} and the price data is stored in vectors $X^{(i)}, i = 1, ... , 10$, beginning with the latest value, in order to calculate the empirical correlation matrices $\mathbf{R}^{(n)}, n = 1, 2, ... , 472, $ according to 
+
 \begin{align}
-\Sigma_{i,j} = Cov(X^{(i)},X^{(j)}) = \frac{1}{n-1} \sum_{k=1}^{n} (X_{k}^{(i)} - \bar{X}^{(i)}) (X_{k}^{(j)} - \bar{X}^{(j)})
+\mathbf{R}_{i,j}^{(n)} = \frac{\sum_{k=n}^{n+N-1} (X_{k}^{(i)} - \bar{X}^{(i)}) (X_{k}^{(j)} - \bar{X}^{(j)})}{\sqrt{\sum_{k=n}^{n+N-1} (X_{k}^{(i)} - \bar{X}^{(i)})^{2} \sum_{k=n}^{n+N-1}(X_{k}^{(j)} - \bar{X}^{(j)})^{2}}},
 \end{align}
 
-where $X_{k}^{(i)}$ is the price of the $i$-th stock at the end of the $k$-th trading day and $n$ describes the total number of analyzed trading days within the relevant time period.
-
+where $X_{k}^{(i)}$ is the price of the $i$-th stock at the end of the $k$-th trading day and $N$ the total number of analyzed trading days, within the relevant time period.
 
 \subsection{Portfolio Correlations from DAX 30 with PCP and Denise}
 
