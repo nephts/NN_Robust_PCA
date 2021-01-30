@@ -86,7 +86,7 @@ class NeuralNet:
         plt.savefig(f'plots/{metric}.pdf')
         plt.show()
 
-    def evaluate(self, M_test, dim):
+    def evaluate(self, M_test, dim, path, i=0):
         if len(M_test.shape) == 2:
             M_test = M_test[None, :, :]
 
@@ -104,7 +104,7 @@ class NeuralNet:
 
         # Plot one example
         fig = plot_matrices(M_test[0], U_pred=U_pred[0])
-        plt.savefig('plots/denise_output.pdf')
+        plt.savefig(f'{path}denise_output_{i}.pdf')
         fig.show()
         return sparsity_test, U_pred
 
