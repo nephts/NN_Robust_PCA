@@ -41,9 +41,9 @@ def get_data(data='synthetic', dim=None, rank=None, sparsity=None, n_samples=Non
         return U, V, L, S, M
 
 
-def comparison(denise, method, data, dim, M_test, n_epochs, n_samples, test_set_size, rank):
+def comparison(denise, method, data, dim, M_test, n_epochs, n_samples, test_set_size, rank, path, i=0):
     # DENISE
-    score, U_denise = denise.evaluate(M_test=data, dim=dim)
+    score, U_denise = denise.evaluate(M_test=data, dim=dim, path=path, i=i)
     L_denise = np.matmul(U_denise[0], U_denise[0].T)
     S_denise = data - L_denise
     tf.print(f'Sparsity (DENISE): {score}')
@@ -55,7 +55,7 @@ def comparison(denise, method, data, dim, M_test, n_epochs, n_samples, test_set_
     score_pcp = matrix_sparsity.result()
     tf.print(f'Sparsity (PCP): {score_pcp}')
 
-    with open("plots/res.txt", "w") as output:
+    with open(f"{path}/res_{i}.txt", "w") as output:
         output.write(f"DENISE trained {n_epochs} epochs with {n_samples - test_set_size} {dim}x{dim} rank {rank} "
                      f"matrices.\nDENISE: \n\nL: \n {str(L_denise)}\n\nS: \n{str(S_denise)}\n\n")
         output.write("-" * 12)
@@ -66,7 +66,7 @@ def comparison(denise, method, data, dim, M_test, n_epochs, n_samples, test_set_
         output.write(f"Relative Error of S: {tf.divide(tf.norm(S_denise - S_method, ord='fro', axis=(0, 1)), tf.norm(S_method, ord='fro', axis=(0, 1)))}\n")
 
     fig = plot_matrices(data, L_pred=L_method)
-    plt.savefig(f'plots/{method}_output.pdf')
+    plt.savefig(f'{path}{method}_{i}.pdf')
     fig.show()
 
 
@@ -78,8 +78,8 @@ def main():
     path = os.path.dirname(os.path.abspath(__file__))
     n_epochs = 300
     n_samples = 1000000
-    dim = 25
-    rank = 5
+    dim = 10
+    rank = 3
     load_weights = True
     save_weights = False
     weights_path = f'models/{dim}_{rank}_{n_samples}_{n_epochs}_weights.h5'
@@ -125,28 +125,42 @@ def main():
     # Compare
     ''' !!! UNCOMMENT the following code for compare on psych data !!! '''
     # Compare on psychdata
-    psychdata = psych.Psychdata()
-    data = psychdata.get_corr()
-    comparison(denise=net, method='pcp', data=data, dim=dim, M_test=M_test, n_epochs=n_epochs,
-             n_samples=n_samples, test_set_size=test_set_size, rank=rank)
+    # psychdata = psych.Psychdata()
+    # data = psychdata.get_corr()
+    # comparison(denise=net, method='pcp', data=data, dim=dim, M_test=M_test, n_epochs=n_epochs,
+    #          n_samples=n_samples, test_set_size=test_set_size, rank=rank)
 
     # ''' !!! UNCOMMENT the following code for compare on finance data !!! '''
-    # # Compare on Finance data
-    # with open('Stock prices dax 30.csv') as stockprices:
-    #     data = list(csv.reader(stockprices, delimiter=";"))
-    # data_array = np.array(data)
-    # data_only = data_array[1:data_array.shape[0], 1:6].T
-    # data_only = np.array([[float(y) for y in x] for x in data_only])
-    # Sigma = np.zeros((5, 5))
+    # Compare on Finance data
+    current_path = os.getcwd()
+    with open(current_path + '/Stock prices dax 30_new.csv') as stockprices:
+        data = list(csv.reader(stockprices, delimiter=","))
+    data_array = np.array(data)
+    data_only = data_array[1:data_array.shape[0], 1:11].T
+    data_only = np.array([[float(y) for y in x] for x in data_only])
 
-    # for k in range(0, data_only.shape[1] - 1):
-    #     Sigma = Sigma + np.dot(np.subtract(data_only[:, k], np.mean(data_only, axis=1)).reshape((5, 1)),
-    #                             np.subtract(data_only[:, k], np.mean(data_only, axis=1)).reshape((1, 5)))
+    t = 35  # length of retrospective observation period
 
-    # Sigma = (1 / (data_only.shape[1] - 1)) * Sigma
+    Sigma = np.zeros((10, 10, data_only.shape[1] - t + 1))
+    Corr = np.zeros((10, 10, data_only.shape[1] - t + 1))
 
-    # comparison(denise=net, method='pcp', data=Sigma, dim=dim, M_test=M_test, n_epochs=n_epochs,
-    #             n_samples=n_samples, test_set_size=test_set_size, rank=rank)
+    for l in range(0, data_only.shape[1] - t):
+
+        Var = np.zeros(10)
+
+        for k in range(l, l + t - 1):
+            Sigma[:, :, l] = Sigma[:, :, l] + np.dot(
+                np.subtract(data_only[:, k], np.mean(data_only[:, l:l + t - 1], axis=1)).reshape((10, 1)),
+                np.subtract(data_only[:, k], np.mean(data_only[:, l:l + t - 1], axis=1)).reshape((1, 10)))
+            Var = Var + np.subtract(data_only[:, k], np.mean(data_only[:, l:l + t - 1], axis=1)) ** 2
+
+            # Sigma[:,:,l] = (1/t-1) * Sigma[:,:,l] aktivate for covariance matrix
+
+        Corr[:, :, l] = Sigma[:, :, l] / np.sqrt(np.dot(Var.reshape((10, 1)), Var.reshape((1, 10))))
+
+    for i in range(Corr.shape[2]):
+        comparison(denise=net, method='pcp', data=Corr[:, :, 1], dim=dim, M_test=M_test, n_epochs=n_epochs,
+                    n_samples=n_samples, test_set_size=test_set_size, rank=rank, path='plots/finance/', i=i)
 
 
 def main_SVD():
@@ -190,8 +204,8 @@ def main_generate_trainings_data():
 
 
 if __name__ == '__main__':
-    # main()
-    main_SVD()
+    main()
+    # main_SVD()
     # main_generate_trainings_data()
     
                       
