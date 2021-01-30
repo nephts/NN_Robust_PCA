@@ -5,7 +5,7 @@ from tensorflow.keras import layers, Sequential, Input, Model, initializers
 from tensorflow.keras.layers import Reshape, Dense, Flatten
 import utilities.metrics
 from models.utilities import custom_loss, custom_loss_UV
-from utilities.metrics import MatrixSparsity
+from utilities.metrics import MatrixSparsity, MatrixSparsity_SVD
 from utilities.plot import plot_matrices
 
 
@@ -144,29 +144,39 @@ class NeuralNet_SVD:
 
         self.history = None
 
+
     def _create_network(self):
         input_tensor = Input(shape=(self.n,self.m), name='Input')
         UV = Flatten()(input_tensor)
-        U = Dense(2*self.n*self.m, activation='relu', name='U1')(UV)
+        # U = Dense(self.n // 2, activation='relu', name='U1')(UV)
+        # U = Dense(self.n // 2, activation='relu',name='U2')(U)
+        # U = Dense(self.n // 2, activation='relu',name='U3')(U)
+        U = Dense(self.n*self.m, activation='relu', name='U1')(UV)
         U = Dense(self.n*self.m//2, activation='relu',name='U2')(U)
-        U = Dense(2*self.n*self.m, activation='relu',name='U3')(U)
+        U = Dense(self.n*self.m, activation='relu',name='U3')(U)
         U = Dense(self.output_dim_U[0] * self.output_dim_U[1], name='U4')(U)
         U = Reshape(self.output_dim_U)(U)
 
-        V = Dense(2*self.n*self.m, bias_initializer="zeros", activation='relu', name='V1')(UV)
+        # V = Dense(self.m // 2, bias_initializer="zeros", activation='relu', name='V1')(UV)
+        # V = Dense(self.m // 2, activation='relu',name='V2')(V)
+        # V = Dense(self.m // 2, activation='relu',name='V3')(V)
+        V = Dense(self.n*self.m, bias_initializer="zeros", activation='relu', name='V1')(UV)
         V = Dense(self.n*self.m//2, activation='relu',name='V2')(V)
-        V = Dense(2*self.n*self.m, activation='relu',name='V3')(V)
+        V = Dense(self.n*self.m, activation='relu',name='V3')(V)
         V = Dense(self.output_dim_V[0] * self.output_dim_V[1], name='V4')(V)
         V = Reshape(self.output_dim_V)(V)
         UV = tf.concat([U,V], axis=-2)
         model = Model(inputs=input_tensor, outputs=UV)
         return model
 
-    def train(self, X, y):
+    def compile(self):
         self.model.compile(optimizer=self.optimizer,
                            loss=self.loss,
                            metrics=self.metrics
                            )
+
+    def train(self, X, y):
+        self.compile()
         
         history = []
         for k in range(self.iterations):
@@ -200,6 +210,14 @@ class NeuralNet_SVD:
         self.history = history
         self.model.summary()
 
+    def save_weights(self, path):
+        self.model.save_weights(filepath=path)
+
+    def load_weights(self, path):
+        x = np.zeros((1, int(self.n), int(self.m)))
+        self.model(x)
+        self.model.load_weights(path)
+
     def plot_metrics(self, metrics):
         for metric in metrics:
             self._plot_one_metric(metric=metric)
@@ -214,30 +232,24 @@ class NeuralNet_SVD:
         plt.xlabel("Epochs")
         plt.ylabel(metric)
         plt.legend(["train_" + metric, 'val_' + metric])
-        plt.savefig(f'plots/{metric}.pdf')
+        plt.savefig(f'plots/SVD_{metric}.pdf')
         plt.show()
 
     def evaluate(self, M_test, dim):
         if len(M_test.shape) == 2:
             M_test = M_test[None, :, :]
 
-        # Convert
-        M_tris = list()
-        for m in M_test:
-            tri_M = m[np.triu_indices(m.shape[0])]
-            M_tris.append(tri_M)
-        M_tris = np.array(M_tris)
-        U_pred = self.predict(X=M_tris)
+        UV_pred = self.predict(X=M_test)
 
-        matrix_sparsity = MatrixSparsity(dim=dim)
-        matrix_sparsity.update_state(M_true=M_test, U_pred=U_pred)
+        matrix_sparsity = MatrixSparsity_SVD(dim=dim)
+        matrix_sparsity.update_state(M_true=M_test, UV_pred=UV_pred)
         sparsity_test = matrix_sparsity.result()
 
         # Plot one example
-        fig = plot_matrices(M_test[0], U_pred=U_pred[0])
-        plt.savefig('plots/denise_output.pdf')
+        fig = plot_matrices(M_test[0], UV_pred=UV_pred[0])
+        plt.savefig('plots/SVD_denise_output.pdf')
         fig.show()
-        return sparsity_test, U_pred
+        return sparsity_test, UV_pred
 
     def predict(self, X):
         return self.model.predict(X)

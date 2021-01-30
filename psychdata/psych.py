@@ -10,7 +10,8 @@ class Psychdata:
         return self.df
         
     def get_reduced_data(self):
-        return self.df.drop(['Unnamed: 0', 'education', 'gender', 'age'], axis=1, inplace=True)
+        self.df.drop(['Unnamed: 0', 'education', 'gender', 'age'], axis=1, inplace=True)
+        return self.df
     
     def get_corr(self):
         data = self.get_reduced_data()

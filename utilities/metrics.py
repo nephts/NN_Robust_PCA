@@ -32,6 +32,38 @@ class MatrixSparsity(tf.keras.metrics.Metric):
         # The state of the metric will be reset at the start of each epoch.
         self.sparsity = 0
 
+class MatrixSparsity_SVD(tf.keras.metrics.Metric):
+    def __init__(self, dim, eps=0.01, name='sparsity', **kwargs):
+        super(MatrixSparsity_SVD, self).__init__(name=name, **kwargs)
+        self.sparsity = 0
+        self.dim = dim
+        self.size = dim[0] * dim[1]
+        self.eps = eps
+
+    def update_state(self, M_true, UV_pred=None, sample_weight=None):
+        if UV_pred is None :
+            raise ValueError('UV_pred can not be None')
+        # Compute L = UU^T
+        if UV_pred is not None:
+            U = UV_pred[:,:self.dim[0]]
+            V_t = K.permute_dimensions(UV_pred[:,self.dim[0]:], pattern=(0, 2, 1))  # V (batch) transposed
+            L_pred = K.batch_dot(U, V_t)
+
+        # Compute S = M - L
+        S = M_true - L_pred
+
+        # Get number of values e_ij in S with |e_ij| < eps
+        n = K.cast(tf.less(tf.abs(S), self.eps), 'float32')
+        # Get mean over batch
+        self.sparsity = K.mean(tf.divide(tf.math.count_nonzero(n, axis=(1, 2)), self.size))
+
+    def result(self):
+        return self.sparsity
+
+    def reset_states(self):
+        # The state of the metric will be reset at the start of each epoch.
+        self.sparsity = 0
+
 
 class MatrixRank(tf.keras.metrics.Metric):
     def __init__(self, dim, eps=0.01, name='rank', **kwargs):

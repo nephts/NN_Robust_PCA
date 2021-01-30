@@ -16,7 +16,7 @@ def custom_loss(M_true, U_pred):
 def custom_loss_UV(n):
 
     # Create a loss function that adds the MSE loss to the mean of all squared activations of a specific layer
-    def loss(M_true,UV_pred):
+    def loss(M_true, UV_pred):
         U = UV_pred[:,:n]
         V_t = K.permute_dimensions(UV_pred[:,n:], pattern=(0, 2, 1))  # V (batch) transposed
         return K.mean(K.abs(K.batch_dot(U, V_t) - M_true))

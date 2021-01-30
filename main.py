@@ -8,7 +8,7 @@ import pickle
 
 from models.net import NeuralNet, NeuralNet_SVD
 from models.utilities import custom_loss
-from utilities.metrics import MatrixSparsity
+from utilities.metrics import MatrixSparsity, MatrixSparsity_SVD
 from utilities.plot import plot_matrices, test_UV
 from data.SyntheticMatrices import SyntheticMatrixSet, SyntheticMatrixSet_SVD
 from pcp import pcp
@@ -73,16 +73,14 @@ def comparison(denise, method, data, dim, M_test, n_epochs, n_samples, test_set_
 
 
 
-def main():    
+def main():   
+    
     # Load data --------------------------------------------------------------
     path = os.path.dirname(os.path.abspath(__file__))
-    n_epochs = 300
     n_samples = 1000000
+    n_epochs = 300
     dim = 25
     rank = 5
-    load_weights = True
-    save_weights = False
-    weights_path = f'models/{dim}_{rank}_{n_samples}_{n_epochs}_weights.h5'
     nk = int(n_samples/1000)
     M = pickle.load( open( path + '/data/synthetic_matrices/M_dim'+str(dim)+'_rank'+str(rank)+'_n'+str(nk)+'k.p', 'rb' ) )
     M_tri = pickle.load( open( path + '/data/synthetic_matrices/M_tri_dim'+str(dim)+'_rank'+str(rank)+'_n'+str(nk)+'k.p', 'rb' ) )
@@ -96,8 +94,8 @@ def main():
     # # Generate data ----------------------------------------------------------
     # data = 'synthetic'
     # n_samples = 10000
-    # dim = 5
-    # rank = 2
+    # dim = 10
+    # rank = 3
     # sparsity = 0.95
     # U, L, S, M, M_tri = get_data(data=data, dim=dim, rank=rank, sparsity=sparsity, n_samples=n_samples)
     
@@ -111,24 +109,27 @@ def main():
                     loss=custom_loss, metrics=[MatrixSparsity(dim=dim)])
 
     # Train or load weights
+    load_weights = True
+    save_weights = False
+    weights_path = f'models/{dim}_{rank}_{n_samples}_{n_epochs}_weights.h5'
     if not load_weights:
-        print(f'starting training for {n_epochs} epochs on {M_train.shape[0]} matrices...')
+        print(f'starting training for {n_epochs} epochs on {n_samples} matrices...')
         net.train(X=M_tri_train, y=M_train)
         net.plot_metrics(metrics=['loss', 'sparsity'])
     else:
-        print(f'load stored network trained for {n_epochs} epochs on {M_train.shape[0]} matrices...')
+        print(f'load stored network trained for {n_epochs} epochs on {n_samples} matrices...')
         net.load_weights(weights_path)
     if save_weights:
         net.save_weights(weights_path)
 
 
     # Compare
-    ''' !!! UNCOMMENT the following code for compare on psych data !!! '''
-    # Compare on psychdata
-    psychdata = psych.Psychdata()
-    data = psychdata.get_corr()
-    comparison(denise=net, method='pcp', data=data, dim=dim, M_test=M_test, n_epochs=n_epochs,
-             n_samples=n_samples, test_set_size=test_set_size, rank=rank)
+    # ''' !!! UNCOMMENT the following code for compare on psych data !!! '''
+    # # Compare on psychdata
+    # psychdata = psych.Psychdata()
+    # data = psychdata.get_corr()
+    # comparison(denise=net, method='pcp', data=data, dim=dim, M_test=M_test, n_epochs=n_epochs,
+    #          n_samples=n_samples, test_set_size=test_set_size, rank=rank)
 
     # ''' !!! UNCOMMENT the following code for compare on finance data !!! '''
     # # Compare on Finance data
@@ -150,43 +151,87 @@ def main():
 
 
 def main_SVD():
-    data = 'synthetic_SVD'
-    n_epochs = 5
-    iterations = 3
-    n_samples = 1500
-    dim = (5,6)
-    rank = 2
+    # Load data --------------------------------------------------------------
+    path = os.path.dirname(os.path.abspath(__file__))
+    n_epochs = 1
+    iterations = 1
+    n_samples = 1000000
+    dim = [15,25]
+    rank = 7
     sparsity = 0.95
-    
+    load_weights = True
+    save_weights = False
+    weights_path = f'models/SVD_{dim}_{rank}_{n_samples}_{n_epochs}_weights.h5'
+    nk = int(n_samples/1000)
+    M = pickle.load( open( path + '/data/synthetic_matrices/SVD_M_dim'+str(dim)+'_rank'+str(rank)+'_n'+str(nk)+'k.p', 'rb' ) )
+    # U = pickle.load( open( path + '/data/synthetic_matrices/SVD_U_dim'+str(dim)+'_rank'+str(rank)+'_n'+str(nk)+'k.p', 'rb' ) )
+    # V = pickle.load( open( path + '/data/synthetic_matrices/SVD_V_dim'+str(dim)+'_rank'+str(rank)+'_n'+str(nk)+'k.p', 'rb' ) )
+    # S = pickle.load( open( path + '/data/synthetic_matrices/SVD_S_dim'+str(dim)+'_rank'+str(rank)+'_n'+str(nk)+'k.p', 'rb' ) )
+
+    # Split data set ---------------------------------------------------------
     test_set_size = int(0.2 * n_samples)
+    M_test = M[:test_set_size]
+    M_train = M[test_set_size:]
+    # S_test, M_test, U_test, V_test = S[:test_set_size], M[:test_set_size], U[:test_set_size], V[:test_set_size]
+    # S_train, M_train, U_train, V_train = S[test_set_size:], M[test_set_size:], U[test_set_size:], V[test_set_size:]
     
-    U, V, L, S, M = get_data(data=data, dim=dim, rank=rank, sparsity=sparsity, n_samples=n_samples)
-    # Split data set.
-    U_test, V_test, L_test, S_test, M_test = U[:test_set_size], V[:test_set_size], L[:test_set_size], S[:test_set_size], M[:test_set_size]
-    U_train, V_train, L_train, S_train, M_train = U[test_set_size:], V[test_set_size:], L[test_set_size:], S[test_set_size:], M[test_set_size:]
+    # # Generate data ----------------------------------------------------------
+    # data = 'synthetic_SVD'
+    # n_epochs = 5
+    # iterations = 10
+    # n_samples = 50000
+    # dim = (6,5)
+    # rank = 2
+    # sparsity = 0.95
     
+    # test_set_size = int(0.2 * n_samples)
+    
+    # U, V, L, S, M = get_data(data=data, dim=dim, rank=rank, sparsity=sparsity, n_samples=n_samples)
+    
+    # # Split data set ---------------------------------------------------------
+    # U_test, V_test, L_test, S_test, M_test = U[:test_set_size], V[:test_set_size], L[:test_set_size], S[:test_set_size], M[:test_set_size]
+    # U_train, V_train, L_train, S_train, M_train = U[test_set_size:], V[test_set_size:], L[test_set_size:], S[test_set_size:], M[test_set_size:]
+    
+
     net = NeuralNet_SVD(rank=rank, n_epochs=n_epochs, iterations=iterations, dim=dim, batch_size=64,
-                    loss=custom_loss)
+                    loss=custom_loss, metrics=[MatrixSparsity_SVD(dim=dim)])
     
-    # # Train
-    print(f'starting training for {n_epochs} epochs on {M_train.shape[0]} matrices...')
-    net.train(X=M_train, y=M_train)
-    net.plot_metrics(metrics=['loss', 'sparsity'])
+
+    # Train or load weights
+    load_weights = False
+    save_weights = True
+    weights_path = f'models/SVD_{dim}_{rank}_{n_samples}_{n_epochs}x{iterations}_weights.h5'
+    if not load_weights:
+        print(f'starting training for {n_epochs} epochs on {n_samples} matrices...')
+        net.train(X=M_train, y=M_train)
+        net.plot_metrics(metrics=['loss', 'sparsity'])
+    else:
+        print(f'load stored network trained for {n_epochs} epochs on {n_samples} matrices...')
+        net.load_weights(weights_path)
+    if save_weights:
+        net.save_weights(weights_path)
     
-    test_UV(U_train, V_train, M_train, net, dim[0])
+    
+    # test_UV(U_train, V_train, M_train, net, dim[0])
     
 def main_generate_trainings_data():
-    for rank in range(5,6):
-        print(rank)
-        dim = 25
-        # rank = 2
-        sparsity = 0.95
-        n_samples = 50000
-        
-        data_generator = SyntheticMatrixSet(dim=dim, rank=rank, sparsity=sparsity)
-        t = time.time()
-        U, L, S, M, M_tri = data_generator.generate_set(n_matrices=n_samples, do_pickle=True)
-        print(time.time()-t)
+    
+    rank = 7
+    # rank = 2
+    sparsity = 0.95
+    n_samples = 1000000
+
+    # dim = 25
+    # data_generator = SyntheticMatrixSet(dim=dim, rank=rank, sparsity=sparsity)
+    # t = time.time()
+    # U, L, S, M, M_tri = data_generator.generate_set(n_matrices=n_samples, do_pickle=True)
+    # print(time.time()-t)
+    
+    dim = [15,25]
+    data_generator = SyntheticMatrixSet_SVD(dim=dim, rank=rank, sparsity=sparsity)
+    t = time.time()
+    U, V, L, S, M = data_generator.generate_set(n_matrices=n_samples, do_pickle=True)
+    print(time.time()-t)
 
 
 if __name__ == '__main__':
@@ -196,12 +241,7 @@ if __name__ == '__main__':
     
                       
                       
-                      
-                      
-                      
-                      
-                      
-                      
-                      
-                      
-                      
+               
+
+
+       
