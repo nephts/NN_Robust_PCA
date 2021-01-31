@@ -159,8 +159,8 @@ def main():
 
         Corr[:, :, l] = Sigma[:, :, l] / np.sqrt(np.dot(Var.reshape((10, 1)), Var.reshape((1, 10))))
 
-    for i in range(Corr.shape[2]):
-        comparison(denise=net, method='pcp', data=Corr[:, :, 1], dim=dim, M_test=M_test, n_epochs=n_epochs,
+    for i in range(10):
+        comparison(denise=net, method='pcp', data=Corr[:, :, i], dim=dim, M_test=M_test, n_epochs=n_epochs,
                     n_samples=n_samples, test_set_size=test_set_size, rank=rank, path='plots/finance/', i=i)
 
 
@@ -175,6 +175,7 @@ def main_SVD():
     # sparsity = 0.95
     # nk = int(n_samples/1000)
     # M = pickle.load( open( path + '/data/synthetic_matrices/SVD_M_dim'+str(dim)+'_rank'+str(rank)+'_n'+str(nk)+'k.p', 'rb' ) )
+
     # U = pickle.load( open( path + '/data/synthetic_matrices/SVD_U_dim'+str(dim)+'_rank'+str(rank)+'_n'+str(nk)+'k.p', 'rb' ) )
     # V = pickle.load( open( path + '/data/synthetic_matrices/SVD_V_dim'+str(dim)+'_rank'+str(rank)+'_n'+str(nk)+'k.p', 'rb' ) )
     # S = pickle.load( open( path + '/data/synthetic_matrices/SVD_S_dim'+str(dim)+'_rank'+str(rank)+'_n'+str(nk)+'k.p', 'rb' ) )
@@ -247,8 +248,8 @@ def main_generate_trainings_data():
 
 
 if __name__ == '__main__':
-    # main()
-    main_SVD()
+    main()
+    # main_SVD()
     # main_generate_trainings_data()
     
                       
