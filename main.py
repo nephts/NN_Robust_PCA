@@ -79,8 +79,8 @@ def main():
     path = os.path.dirname(os.path.abspath(__file__))
     n_samples = 1000000
     n_epochs = 300
-    dim = 25
-    rank = 5
+    dim = 10
+    rank = 3
     load_weights = True
     save_weights = False
     weights_path = f'models/{dim}_{rank}_{n_samples}_{n_epochs}_weights.h5'
@@ -159,16 +159,16 @@ def main():
 
         Corr[:, :, l] = Sigma[:, :, l] / np.sqrt(np.dot(Var.reshape((10, 1)), Var.reshape((1, 10))))
 
-    for i in range(Corr.shape[2]):
-        comparison(denise=net, method='pcp', data=Corr[:, :, 1], dim=dim, M_test=M_test, n_epochs=n_epochs,
+    for i in range(10):
+        comparison(denise=net, method='pcp', data=Corr[:, :, i], dim=dim, M_test=M_test, n_epochs=n_epochs,
                     n_samples=n_samples, test_set_size=test_set_size, rank=rank, path='plots/finance/', i=i)
 
 
 def main_SVD():
     # Load data --------------------------------------------------------------
     path = os.path.dirname(os.path.abspath(__file__))
-    n_epochs = 1
-    iterations = 1
+    n_epochs = 5
+    iterations = 5
     n_samples = 1000000
     dim = [15,25]
     rank = 7
@@ -249,8 +249,8 @@ def main_generate_trainings_data():
 
 
 if __name__ == '__main__':
-    # main()
-    main_SVD()
+    main()
+    # main_SVD()
     # main_generate_trainings_data()
     
                       
