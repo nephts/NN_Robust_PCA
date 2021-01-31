@@ -214,8 +214,8 @@ class NeuralNet_SVD:
         self.model.save_weights(filepath=path)
 
     def load_weights(self, path):
-        x = np.zeros((1, int(self.n), int(self.m)))
-        self.model(x)
+        # x = np.zeros((1, int(self.n), int(self.m)))
+        # self.model(x)
         self.model.load_weights(path)
 
     def plot_metrics(self, metrics):
