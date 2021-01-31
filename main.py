@@ -65,7 +65,7 @@ def comparison(denise, method, data, dim, M_test, n_epochs, n_samples, test_set_
         output.write(f"Relative Error of L : {tf.divide(tf.norm(L_denise - L_method, ord='fro', axis=(0, 1)), tf.norm(L_method, ord='fro', axis=(0, 1)))}\n")
         output.write(f"Relative Error of S: {tf.divide(tf.norm(S_denise - S_method, ord='fro', axis=(0, 1)), tf.norm(S_method, ord='fro', axis=(0, 1)))}\n")
 
-    fig = plot_matrices(data, L_pred=L_method)
+    fig = plot_matrices(data, L_pred=L_method) #, vmin=-1, vmax=1.1)
     plt.savefig(f'{path}{method}_{i}.pdf')
     fig.show()
 
@@ -161,7 +161,7 @@ def main():
 
     for i in range(10):
         comparison(denise=net, method='pcp', data=Corr[:, :, i], dim=dim, M_test=M_test, n_epochs=n_epochs,
-                    n_samples=n_samples, test_set_size=test_set_size, rank=rank, path='plots/finance/', i=i)
+                    n_samples=n_samples, test_set_size=test_set_size, rank=rank, path='plots/finance_fixed_colorcode/', i=i)
 
 
 def main_SVD():

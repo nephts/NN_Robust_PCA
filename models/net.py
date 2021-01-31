@@ -103,7 +103,7 @@ class NeuralNet:
         sparsity_test = matrix_sparsity.result()
 
         # Plot one example
-        fig = plot_matrices(M_test[0], U_pred=U_pred[0])
+        fig = plot_matrices(M_test[0], U_pred=U_pred[0]) #, vmin=-1, vmax=1.1)
         plt.savefig(f'{path}denise_output_{i}.pdf')
         fig.show()
         return sparsity_test, U_pred
