@@ -80,5 +80,9 @@ plot_matrices(M_set[index], L_pred=L_pred)
 %timeit net.predict(M_set[index:index+1])
 
 
+#%%
 
+n = 10
+
+print(32*n*(n+1)/2)
 

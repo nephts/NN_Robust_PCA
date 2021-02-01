@@ -41,9 +41,9 @@ def get_data(data='synthetic', dim=None, rank=None, sparsity=None, n_samples=Non
         return U, V, L, S, M
 
 
-def comparison(denise, method, data, dim, M_test, n_epochs, n_samples, test_set_size, rank, path, i=0):
+def comparison(denise, method, data, dim, M_test, n_epochs, n_samples, test_set_size, rank, path, color_code_min=None, color_code_max=None, i=0):
     # DENISE
-    score, U_denise = denise.evaluate(M_test=data, dim=dim, path=path, i=i)
+    score, U_denise = denise.evaluate(M_test=data, dim=dim, path=path, color_code_min=color_code_min, color_code_max=color_code_max, i=i)
     L_denise = np.matmul(U_denise[0], U_denise[0].T)
     S_denise = data - L_denise
     tf.print(f'Sparsity (DENISE): {score}')
@@ -65,7 +65,7 @@ def comparison(denise, method, data, dim, M_test, n_epochs, n_samples, test_set_
         output.write(f"Relative Error of L : {tf.divide(tf.norm(L_denise - L_method, ord='fro', axis=(0, 1)), tf.norm(L_method, ord='fro', axis=(0, 1)))}\n")
         output.write(f"Relative Error of S: {tf.divide(tf.norm(S_denise - S_method, ord='fro', axis=(0, 1)), tf.norm(S_method, ord='fro', axis=(0, 1)))}\n")
 
-    fig = plot_matrices(data, L_pred=L_method) #, vmin=-1, vmax=1.1)
+    fig = plot_matrices(data, L_pred=L_method, vmin=color_code_min, vmax=color_code_max)
     plt.savefig(f'{path}{method}_{i}.pdf')
     fig.show()
 
@@ -139,6 +139,7 @@ def main():
     data_array = np.array(data)
     data_only = data_array[1:data_array.shape[0], 1:11].T
     data_only = np.array([[float(y) for y in x] for x in data_only])
+    net.model.summary()
 
     t = 35  # length of retrospective observation period
 
@@ -158,10 +159,11 @@ def main():
             # Sigma[:,:,l] = (1/t-1) * Sigma[:,:,l] aktivate for covariance matrix
 
         Corr[:, :, l] = Sigma[:, :, l] / np.sqrt(np.dot(Var.reshape((10, 1)), Var.reshape((1, 10))))
-
-    for i in range(10):
+    
+    for i in range(5):
         comparison(denise=net, method='pcp', data=Corr[:, :, i], dim=dim, M_test=M_test, n_epochs=n_epochs,
-                    n_samples=n_samples, test_set_size=test_set_size, rank=rank, path='plots/finance_fixed_colorcode/', i=i)
+                    n_samples=n_samples, test_set_size=test_set_size, rank=rank, path='plots/finance_fixed_colorcode_2/', 
+                    color_code_min=-1.1, color_code_max=1.1, i=i)
 
 
 def main_SVD():
