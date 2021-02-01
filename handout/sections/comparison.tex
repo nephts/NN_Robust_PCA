@@ -70,21 +70,27 @@ where $X_{k}^{(i)}$ is the price of the $i$-th stock at the end of the $k$-th tr
 \subsection{Portfolio Correlations from DAX 30 with PCP and Denise}
 For test purposes we applied the PCP algorithm on 472 empirical correlation matrices of the ten DAX 30 companies, mentioned before. Due to our approach in calculating the different correlation matrices, their structure changes quite slowly. Hence, we concentrate our investigations only on 10 matrices with equidistant time steps.
 \par
-We train the neural network on a synthetic data set of 1000000 $10\times 10$-matrices of rank three. Training and validation loss are illustrated in Fig. \ref{fig:finance_training}. The comparison of the RPCA decomposition of the correlations matrices into rank $3$ matrix $L$ and sparse $S$ for both methods is shown in Fig. \ref{fig:compfinance}. Representatively, we have choosen only one decomposition, because the color plots of the ten matrices are quite similar. This simularity allows us to restrict further investigations  concerning the attributes of the decompositions on only one single matrix. As one can see, the decomposition obtained from our neural network suffers significant outliers on the diagonal elements in $L$ as well as $S$, which is not apparent in the PCP decomposition. One explanation for the occurence of the outliers on the diagonal can be the structure of the traning matrices. The normalization of the correlation matrices causes, that the diagonal elements are all set to $1$. Since this particular property is missing in the training data, the network could not process the diagonal elements accurately. Due to this outlier not much structure is visible in $L$ obtained from the neural network. However, apart from the diagonal elements the $S$-matrices of both methods seem to agree to some approximation (respecting the corresponding color code). As a metric, to measure how well the two algorithms agree, we determine the relative errors $\epsilon_\text{rel} (S_\text{PCP}, S_\text{NN}),\, \epsilon_\text{rel} (L_\text{PCP}, L_\text{NN})$ as the relative $l_2$-distance
+We train the neural network on a synthetic data set of 1000000 $10\times 10$-matrices of rank three. Training and validation loss are illustrated in Fig. \ref{fig:finance_training}. Figure \ref{fig:finance_sparsity} shows the training and validation sparsity over the epochs. Unfortunately, the reached sparsity of density is not much higher than $\sim 2\%$. The sparsity, that is obtained in the orignal article, is around $\sim 99 \%$ for the finacial data sets \cite[Table 2.]{herrera2020denise}. This is a strong hint, that there is still improvement potential for our neural network. A small training set, aswell as a unsuitable architecture, could responsible that our neural network is not able to reduce the correlation in the data on three main components. The comparison of the RPCA decomposition of the correlations matrices into rank $3$ matrix $L$ and sparse $S$ for both methods is shown in Fig. \ref{fig:compfinance}. Representatively, we have choosen only one decomposition, because the color plots of the ten matrices are quite similar. This simularity allows us to restrict further investigations  concerning the attributes of the decompositions on only one single matrix. As one can see, the decomposition obtained from our neural network suffers significant outliers on the diagonal elements in $L$ as well as $S$, which is not apparent in the PCP decomposition. One explanation for the occurence of the outliers on the diagonal can be the structure of the traning matrices. The normalization of the correlation matrices causes, that the diagonal elements are all set to $1$. Since this particular property is missing in the training data, the network could not process the diagonal elements accurately. Due to this outlier not much structure is visible in $L$ obtained from the neural network. However, apart from the diagonal elements the $S$-matrices of both methods seem to agree to some approximation (respecting the corresponding color code). As a metric, to measure how well the two algorithms agree, we determine the relative errors $\epsilon_\text{rel} (S_\text{PCP}, S_\text{NN}),\, \epsilon_\text{rel} (L_\text{PCP}, L_\text{NN})$ as the relative $l_2$-distance
 \begin{align}
 \epsilon_\text{rel}(A,B) = \frac{\Vert A - B \Vert_{l_2}}{\Vert A \Vert_{l_2}}
 \end{align}
 between $S_\text{PCP}, S_\text{NN}$, respectively between $L_\text{PCP}, L_\text{NN}$ (the PCP-, respectively neural-network-prediction for $S$ and $L$):
 \begin{align}
-\epsilon_\text{rel}(S_\text{PCP},S_\text{NN}) = 5,788\,, \quad  \epsilon_\text{rel}(L_\text{PCP},L_\text{NN}) = 1,098 \,.
+\epsilon_\text{rel}(S_\text{PCP},S_\text{NN}) = 3,234\,, \quad  \epsilon_\text{rel}(L_\text{PCP},L_\text{NN}) = 0,909 \,.
 \end{align}
+The running time for the neural network calculation of the RPCA is $0,0197$ seconds. The PCP algorithm needed $0,131$ seconds. Hence, the neural network approach is approximately an order of magnitude faster.
 \begin{figure}
 	\centering
-	\includegraphics[width=0.6\textwidth]{fig/loss_finance.pdf}
+	\includegraphics[width=0.9\textwidth]{fig/loss_finance.pdf}
 	\caption{Training and validation loss of the network training for finance data.}
 	\label{fig:finance_training}
 \end{figure}
-
+\begin{figure}
+	\centering
+	\includegraphics[width=0.9\textwidth]{fig/sparsity_finance.pdf}
+	\caption{Training and validation sparsity evolution over the epochs.}
+	\label{fig:finance_sparsity}
+\end{figure}
 \begin{figure}
 	\centering
 	\includegraphics[width=0.48\textwidth]{fig/denise_output_finance.pdf}
@@ -126,6 +132,13 @@ The comparison of both methods, in combination with the striking results reporte
 	\caption{Comparison of RPCA of the empirical $25\times 25$ covariance matrix of 27 personality features of roughly 2800 individuals (see main text). The left panel shows the resulting decomposition $M=L+S$ obtained from the neural network approach, while the right panel shows the results from PCP.}
 	\label{fig:comppsych}
 \end{figure}
+
+
+
+
+
+
+
 
 
 

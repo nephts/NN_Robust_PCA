@@ -83,6 +83,17 @@ plot_matrices(M_set[index], L_pred=L_pred)
 #%%
 
 n = 10
+dim = 10
+n_epochs = 100
+rank = 3
+input_dim = dim * (dim + 1) / 2
 
 print(32*n*(n+1)/2)
+
+net2 = NeuralNet(n_epochs=n_epochs, dim=dim, output_dim=(dim, rank), batch_size=64,
+                    loss=custom_loss, metrics=[MatrixSparsity(dim=dim)])
+
+x = np.zeros((1, int(input_dim)))
+net2.model(x)
+net2.model.summary()
 
