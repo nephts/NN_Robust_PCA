@@ -38,9 +38,9 @@ class NeuralNet:
 
     def _create_network(self):
         self.model = Sequential()
-        self.model.add(layers.Dense(self.dim // 2, activation="relu"))
-        self.model.add(layers.Dense(self.dim // 2, activation="relu"))
-        self.model.add(layers.Dense(self.dim // 2, activation="relu"))
+        self.model.add(layers.Dense(self.dim * 2, activation="relu"))
+        self.model.add(layers.Dense(self.dim * 2, activation="relu"))
+        self.model.add(layers.Dense(self.dim * 2, activation="relu"))
         self.model.add(layers.Dense(self.output_dim[0] * self.output_dim[1]))
         self.model.add(layers.Reshape(self.output_dim))  # to matrix
         # model.add(Shrink(self.dim))
