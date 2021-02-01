@@ -43,7 +43,7 @@ class NeuralNet:
         self.model.add(layers.Dense(self.dim * 2, activation="relu"))
         self.model.add(layers.Dense(self.output_dim[0] * self.output_dim[1]))
         self.model.add(layers.Reshape(self.output_dim))  # to matrix
-        # model.add(Shrink(self.dim))
+        # self.model.add(Shrink(self.dim))
 
     def compile(self):
         self.model.compile(optimizer=self.optimizer,
