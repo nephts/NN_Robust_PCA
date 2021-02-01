@@ -41,9 +41,9 @@ def get_data(data='synthetic', dim=None, rank=None, sparsity=None, n_samples=Non
         return U, V, L, S, M
 
 
-def comparison(denise, method, data, dim, M_test, n_epochs, n_samples, test_set_size, rank, path, i=0):
+def comparison(denise, method, data, dim, M_test, n_epochs, n_samples, test_set_size, rank, path, color_code_min=None, color_code_max=None, i=0):
     # DENISE
-    score, U_denise = denise.evaluate(M_test=data, dim=dim, path=path, i=i)
+    score, U_denise = denise.evaluate(M_test=data, dim=dim, path=path, color_code_min=color_code_min, color_code_max=color_code_max, i=i)
     L_denise = np.matmul(U_denise[0], U_denise[0].T)
     S_denise = data - L_denise
     tf.print(f'Sparsity (DENISE): {score}')
@@ -65,7 +65,7 @@ def comparison(denise, method, data, dim, M_test, n_epochs, n_samples, test_set_
         output.write(f"Relative Error of L : {tf.divide(tf.norm(L_denise - L_method, ord='fro', axis=(0, 1)), tf.norm(L_method, ord='fro', axis=(0, 1)))}\n")
         output.write(f"Relative Error of S: {tf.divide(tf.norm(S_denise - S_method, ord='fro', axis=(0, 1)), tf.norm(S_method, ord='fro', axis=(0, 1)))}\n")
 
-    fig = plot_matrices(data, L_pred=L_method)
+    fig = plot_matrices(data, L_pred=L_method, vmin=color_code_min, vmax=color_code_max)
     plt.savefig(f'{path}{method}_{i}.pdf')
     fig.show()
 
@@ -139,6 +139,7 @@ def main():
     data_array = np.array(data)
     data_only = data_array[1:data_array.shape[0], 1:11].T
     data_only = np.array([[float(y) for y in x] for x in data_only])
+    net.model.summary()
 
     t = 35  # length of retrospective observation period
 
@@ -158,53 +159,52 @@ def main():
             # Sigma[:,:,l] = (1/t-1) * Sigma[:,:,l] aktivate for covariance matrix
 
         Corr[:, :, l] = Sigma[:, :, l] / np.sqrt(np.dot(Var.reshape((10, 1)), Var.reshape((1, 10))))
-
-    for i in range(10):
+    
+    for i in range(5):
         comparison(denise=net, method='pcp', data=Corr[:, :, i], dim=dim, M_test=M_test, n_epochs=n_epochs,
-                    n_samples=n_samples, test_set_size=test_set_size, rank=rank, path='plots/finance/', i=i)
+                    n_samples=n_samples, test_set_size=test_set_size, rank=rank, path='plots/finance_fixed_colorcode_2/', 
+                    color_code_min=-1.1, color_code_max=1.1, i=i)
 
 
 def main_SVD():
     # Load data --------------------------------------------------------------
-    path = os.path.dirname(os.path.abspath(__file__))
-    n_epochs = 5
-    iterations = 5
-    n_samples = 1000000
-    dim = [15,25]
-    rank = 7
-    sparsity = 0.95
-    load_weights = True
-    save_weights = False
-    weights_path = f'models/SVD_{dim}_{rank}_{n_samples}_{n_epochs}_weights.h5'
-    nk = int(n_samples/1000)
-    M = pickle.load( open( path + '/data/synthetic_matrices/SVD_M_dim'+str(dim)+'_rank'+str(rank)+'_n'+str(nk)+'k.p', 'rb' ) )
+    # path = os.path.dirname(os.path.abspath(__file__))
+    # n_epochs = 1
+    # iterations = 1
+    # n_samples = 1000000
+    # dim = [15,25]
+    # rank = 7
+    # sparsity = 0.95
+    # nk = int(n_samples/1000)
+    # M = pickle.load( open( path + '/data/synthetic_matrices/SVD_M_dim'+str(dim)+'_rank'+str(rank)+'_n'+str(nk)+'k.p', 'rb' ) )
+
     # U = pickle.load( open( path + '/data/synthetic_matrices/SVD_U_dim'+str(dim)+'_rank'+str(rank)+'_n'+str(nk)+'k.p', 'rb' ) )
     # V = pickle.load( open( path + '/data/synthetic_matrices/SVD_V_dim'+str(dim)+'_rank'+str(rank)+'_n'+str(nk)+'k.p', 'rb' ) )
     # S = pickle.load( open( path + '/data/synthetic_matrices/SVD_S_dim'+str(dim)+'_rank'+str(rank)+'_n'+str(nk)+'k.p', 'rb' ) )
 
     # Split data set ---------------------------------------------------------
-    test_set_size = int(0.2 * n_samples)
-    M_test = M[:test_set_size]
-    M_train = M[test_set_size:]
+    # test_set_size = int(0.2 * n_samples)
+    # M_test = M[:test_set_size]
+    # M_train = M[test_set_size:]
     # S_test, M_test, U_test, V_test = S[:test_set_size], M[:test_set_size], U[:test_set_size], V[:test_set_size]
     # S_train, M_train, U_train, V_train = S[test_set_size:], M[test_set_size:], U[test_set_size:], V[test_set_size:]
     
-    # # Generate data ----------------------------------------------------------
-    # data = 'synthetic_SVD'
-    # n_epochs = 5
-    # iterations = 10
-    # n_samples = 50000
-    # dim = (6,5)
-    # rank = 2
-    # sparsity = 0.95
+    # Generate data ----------------------------------------------------------
+    data = 'synthetic_SVD'
+    n_epochs = 5
+    iterations = 20
+    n_samples = 100000
+    dim = (5,4)
+    rank = 2
+    sparsity = 0.95
     
-    # test_set_size = int(0.2 * n_samples)
+    test_set_size = int(0.2 * n_samples)
     
-    # U, V, L, S, M = get_data(data=data, dim=dim, rank=rank, sparsity=sparsity, n_samples=n_samples)
+    U, V, L, S, M = get_data(data=data, dim=dim, rank=rank, sparsity=sparsity, n_samples=n_samples)
     
-    # # Split data set ---------------------------------------------------------
-    # U_test, V_test, L_test, S_test, M_test = U[:test_set_size], V[:test_set_size], L[:test_set_size], S[:test_set_size], M[:test_set_size]
-    # U_train, V_train, L_train, S_train, M_train = U[test_set_size:], V[test_set_size:], L[test_set_size:], S[test_set_size:], M[test_set_size:]
+    # Split data set ---------------------------------------------------------
+    U_test, V_test, L_test, S_test, M_test = U[:test_set_size], V[:test_set_size], L[:test_set_size], S[:test_set_size], M[:test_set_size]
+    U_train, V_train, L_train, S_train, M_train = U[test_set_size:], V[test_set_size:], L[test_set_size:], S[test_set_size:], M[test_set_size:]
     
 
     net = NeuralNet_SVD(rank=rank, n_epochs=n_epochs, iterations=iterations, dim=dim, batch_size=64,
@@ -212,8 +212,8 @@ def main_SVD():
     
 
     # Train or load weights
-    load_weights = False
-    save_weights = True
+    load_weights = True
+    save_weights = False
     weights_path = f'models/SVD_{dim}_{rank}_{n_samples}_{n_epochs}x{iterations}_weights.h5'
     if not load_weights:
         print(f'starting training for {n_epochs} epochs on {n_samples} matrices...')
@@ -225,8 +225,9 @@ def main_SVD():
     if save_weights:
         net.save_weights(weights_path)
     
-    
-    # test_UV(U_train, V_train, M_train, net, dim[0])
+    test_UV(U_test, V_test, M_test, net, dim[0])
+    test_UV(U_test, V_test, M_test, net, dim[0])
+    test_UV(U_test, V_test, M_test, net, dim[0])
     
 def main_generate_trainings_data():
     

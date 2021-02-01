@@ -4,7 +4,7 @@ Mathematically, PCA is the eigenvalue decomposition of correlation-, respectivel
 
 The above, obviously, only works for square-matrices which are additionally positive semi-definite. However, for \textit{any} matrix $M$, given for example a $n\times m$ data-matrix of $m$ observations of $n$ features, we can calculate the singular value decomposition (SVD) $M = \tilde{U} (\Lambda, 0) \tilde{V}^T$ (here, we assume $m\geq n$; the other case is very similar). $U$ is a orthogonal $n\times n$-matrix, $V$ is an orthogonal $m\times m$ matrix and $(\Lambda, 0)$ is a diagonal rectangular $n\times m$ matrix with $\Lambda = \diag{\lambda_1,\dots,\lambda_n}$ in the first $n$ columns and $0$ everywhere else. The columns of $\tilde{U},\tilde{V}$ are the left, respectively right, singular vectors of $M$ and $\lambda_1,\dots,\lambda_n$ are its singular values. As above in the case of the eigenvalue decomposition, the SVD of $M$ is equivalent to the decomposition $M = UV^T$ with $n\times n$-matrix $U = \tilde{U}\sqrt{\Lambda}$ and $n\times m$-matrix $V^T = (\sqrt{\Lambda}, 0) \tilde{V}^T$. Note that the SVD is not unique, but is always exists. Moreover, the eigenvalue decomposition is a special case of the more general SVD which, if applicable, is in fact unique up to permuting the eigenvectors in $U$.
 
-In the following we describe an approach based on neural networks, to obtain the eigenvalue decomposition (i.e. PCA) of positive semi-definite matrices, respectively the SVD of general matrices. Moreover, this decomposition should be of low rank $r<n$, meaning that we want to restrict to an approximate decomposition $M \approx UV^T$ with $n\times r$-matrix $U$ and $m\times r$-matrix $V$. In this approximation, the columns of $U,V$ approximate the $r$ left, respectively right, singular vectors corresponding to the $r$ largest singular values of $M$. If the remaining $n-r$ singular values are indeed very small in comparison with those, then the rank-$r$ decomposition is justified an yields a valid approximation. We tackle the rank-$r$ decomposition $M \approx UV^T$ by learning the map from $M \mapsto U,V$ by a neural network trained on a suitable synthetic dataset $(M_i,(U_i,V_i))_i$ of such matrices, as described in detail subsequently. 
+In the following we describe an approach based on neural networks, to obtain the eigenvalue decomposition (i.e. PCA) of positive semi-definite matrices, respectively the SVD of general matrices. Moreover, this decomposition should be of low rank $k<n$, meaning that we want to restrict to an approximate decomposition $M \approx UV^T$ with $n\times k$-matrix $U$ and $m\times k$-matrix $V$. In this approximation, the columns of $U,V$ approximate the $k$ left, respectively right, singular vectors corresponding to the $k$ largest singular values of $M$. If the remaining $n-k$ singular values are indeed very small in comparison with those, then the rank-$k$ decomposition is justified an yields a valid approximation. We tackle the rank-$k$ decomposition $M \approx UV^T$ by learning the map from $M \mapsto U,V$ by a neural network trained on a suitable synthetic dataset $(M_i,(U_i,V_i))_i$ of such matrices, as described in detail subsequently. 
 
 
 
@@ -46,12 +46,44 @@ For the construction of the low-rank matrix $L_0$, we collect $nk_0$ samples of 
 
 \subsection{Singular value decomposition of arbitrary matrices (data matrices)}
 
-In the preceding section, we aimed at learning the mapping $M\mapsto U$ for the decomposition $M = UU^T$ by means of a neural network through minimizing the loss $\Vert UU^T - M \Vert_{\ell_1}$. To obtain the low rank-$r$ ($r<n$) SVD $M = UV^T$ of a arbitrary $n\times m$-matrix $M$ into $n\times r$-matrix $U$ and $m\times r$-matrix $V$ we proceed in a similar fashion. However, in this case we train two neural networks $\mathcal{N}_U$ and $\mathcal{N}_V$, one for each mapping $M\mapsto U, M\mapsto V$, by minimizing the loss
+In the preceding section, we aimed at learning the mapping $M\mapsto U$ for the decomposition $M = UU^T$ by means of a neural network through minimizing the loss $\Vert UU^T - M \Vert_{\ell_1}$. To obtain the low rank-$k$ ($k<n$) SVD $M = UV^T$ of a arbitrary $n\times m$-matrix $M$ into $n\times k$-matrix $U$ and $m\times k$-matrix $V$ we proceed in a similar fashion. However, in this case we train two neural networks $\mathcal{N}_U$ and $\mathcal{N}_V$, one for each mapping $M\mapsto U, M\mapsto V$, by minimizing the loss
 \[
 \Vert UV^T - M \Vert_{\ell_1} \,.
 \]
-Obviously, the loss function depends on the predictions of both neural networks. Training the networks parallel at the same time is computationally expensive for large matrices $M$. Therefore, we propose to train both networks in an alternating manner, through successively optimizing the weights of one network by keeping the weights of the others fixed, and vice versa. This procedure must be repeated for several iterations to obtain a reasonable prediction accuracy. The architectures of both networks $\mathcal{N}_U,\mathcal{N}_V$ are chosen to match the network $\mathcal{N}$ of the previous section. However, as compared to the decomposition of positive semi-definite matrices above, we cannot restrict to the lower triangular part of $M$ as input for the network, since $M$ is not necessary symmetric (not even quadratic) anymore.
+The $\ell_1$ norm results is used, as above, to force sparsity of the difference $S = UV^T -M$. Obviously, the loss function depends on the predictions of both neural networks. After training, the prediction of the combined network for a given input $M_\text{truth}$ is given by
+\[
+M_\text{pred} = \mathcal{N}_U(M_\text{truth})\mathcal{N}_V(M_\text{truth})^T ,.
+\]
+Training the networks parallel at the same time is computationally expensive for large matrices $M$. Therefore, we propose to train both networks in an alternating manner, through successively optimizing the weights of one network by keeping the weights of the others fixed, and vice versa. This procedure must be repeated for several iterations to obtain a reasonable prediction accuracy.
 
-In the following, we will mostly restrict to the simpler robust low-rank decomposition $M = UU^T$ of a positive semi-definite input matrix $M$. This is a very common situation in practice and of great relevance, for example in the PCA of correlation matrices.
+\paragraph{Architecture}
+The architectures of both networks $\mathcal{N}_U,\mathcal{N}_V$ are chosen similar to the network $\mathcal{N}$ of the previous section. We choose three hidden dense layers, densely connected to the output layer of dimension $n\times k$, respectively $m\times k$. The first and third hidden layer have $n*m$ nodes, each, while the second layer has $n*m/2$ nodes. Compared to the decomposition of positive semi-definite matrices above, we are not allow to restrict to the lower triangular part of $M$ as input for the network, since $M$ is not necessary symmetric (not even quadratic).
 
-\subsection{Training of the SVD networks}
+
+\paragraph{Generation of training data}
+
+The training data is generated similar to above. However, here we generate $U$ and $V$ by sampling their components from independent standard normal distributions. The sparse matrix $S$, representing possible corruptions of the data, is at first initialized as $n\times m$-matrix with zero entries everywhere. Subsequently we uniformly choose entries $(i,j)$ and filling these with random real number following a uniform distribution on $[-1,1]$. This es repeated until the fraction of non-zero entries $r/n*m >0.05$ ($r$ is the number of non-zero entries) arrives at a value larger then a pre-defined threshold (we choose here 0.05). From $U,V,S$ we generate the matrix $M = UV^T + S$, which will be given to the neural networks as training data. Differently then above, we do not need a positive semi-definite $M$ here, hence we do not need to use a special generation procedure to enforce positivity of $S$.
+
+\paragraph{Testing}
+For a fist impression of the performance of the neural network SVD, we test the trained two-fold network $(\mathcal{N}_U,\mathcal{N}_V)$ on synthetic test-matrices generated by the same procedure as the training data. For testing, we choose $5\times 4$-matrices and aim at a rank-$2$ decomposition $M = UV^T$ in $5\times 2$-matrix $U$ and $4\times 2$-matrix V. We train the network on a training set of size $100000$ (from which we split of $0.2$ as validation dataset) for $20$ iterations, where in each iteration each network part is trained for 5 epochs. This results in a total number of 200 epochs. We do this with batch-size $64$. The progression of the loss-function and a metric, measuring the sparsity of $S = M - UV^T$, during training is depicted in Fig. \ref{fig:SVD_training_loss_sparsity} for, both, the training and validation data.
+\begin{figure}
+\centering
+\includegraphics[width=0.48\textwidth]{fig/loss_SVD_[5,4]_k2.png}
+\includegraphics[width=0.48\textwidth]{fig/sparsity_SVD_[5,4]_k2.png}
+\caption{Evolution of loss and sparsity-metric on the training and validation data during training over $20\times 5\times 2$ epochs (see main text for explanation)}
+\label{fig:SVD_training_loss_sparsity}
+\end{figure}
+The trained neural network is then tested on three random test matrices $M$, generated as described above. The results are shown in Fig. \ref{fig:SVD_testMLS}. The neural network prediction $L = \mathcal{N}_U(M_\text{truth})\mathcal{N}_V(M_\text{truth})^T$ are quite accurate approximations of actual input matrices $M_\text{truth}$, as one can observed from the matrix-plots. Also the matrices $S = M -L$ are relatively sparse.
+\begin{figure}
+	\centering
+	\includegraphics[width=0.25\textwidth]{fig/SVD_testMLS1_[5,4]_k2.png}
+	\includegraphics[width=0.25\textwidth]{fig/SVD_testMLS2_[5,4]_k2.png}
+	\includegraphics[width=0.25\textwidth]{fig/SVD_testMLS3_[5,4]_k2.png}
+	\caption{Testing the $M = L + S$ decomposition (with $L=UV^T$) for $U,V$ calculated from the trained combined neural network $(\mathcal{N}_U,\mathcal{N}_V)$.}
+	\label{fig:SVD_testMLS}
+\end{figure}
+
+
+This first test, shows the general capabilities of the presented neural network approach to calculate the robust SVD of arbitrary matrices $M$. However, in the following, we will mostly restrict to the simpler robust low-rank decomposition $M = UU^T$ of a positive semi-definite input matrix $M$. This is a very common situation in practice and of great relevance, for example in the PCA of correlation matrices.
+
+
