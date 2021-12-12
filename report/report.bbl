@@ -1,0 +1,107 @@
+% $ biblatex auxiliary file $
+% $ biblatex bbl format version 3.1 $
+% Do not modify the above lines!
+%
+% This is an auxiliary file used by the 'biblatex' package.
+% This file may safely be deleted. It will be recreated as
+% required.
+%
+\begingroup
+\makeatletter
+\@ifundefined{ver@biblatex.sty}
+  {\@latex@error
+     {Missing 'biblatex' package}
+     {The bibliography requires the 'biblatex' package.}
+      \aftergroup\endinput}
+  {}
+\endgroup
+
+\datalist[entry]{none/global//global/global}
+  \entry{herrera2020denise}{misc}{}
+    \name{author}{5}{}{%
+      {{hash=HC}{%
+         family={Herrera},
+         familyi={H\bibinitperiod},
+         given={Calypso},
+         giveni={C\bibinitperiod},
+      }}%
+      {{hash=KF}{%
+         family={Krach},
+         familyi={K\bibinitperiod},
+         given={Florian},
+         giveni={F\bibinitperiod},
+      }}%
+      {{hash=KA}{%
+         family={Kratsios},
+         familyi={K\bibinitperiod},
+         given={Anastasis},
+         giveni={A\bibinitperiod},
+      }}%
+      {{hash=RP}{%
+         family={Ruyssen},
+         familyi={R\bibinitperiod},
+         given={Pierre},
+         giveni={P\bibinitperiod},
+      }}%
+      {{hash=TJ}{%
+         family={Teichmann},
+         familyi={T\bibinitperiod},
+         given={Josef},
+         giveni={J\bibinitperiod},
+      }}%
+    }
+    \strng{namehash}{HC+1}
+    \strng{fullhash}{HCKFKARPTJ1}
+    \field{labelnamesource}{author}
+    \field{labeltitlesource}{title}
+    \verb{eprint}
+    \verb 2004.13612
+    \endverb
+    \field{title}{Denise: Deep Learning based Robust PCA for Positive
+  Semidefinite Matrices}
+    \field{eprinttype}{arXiv}
+    \field{eprintclass}{stat.ML}
+    \field{year}{2020}
+  \endentry
+
+  \entry{candes2009robust}{misc}{}
+    \name{author}{4}{}{%
+      {{hash=CEJ}{%
+         family={Candes},
+         familyi={C\bibinitperiod},
+         given={Emmanuel\bibnamedelima J.},
+         giveni={E\bibinitperiod\bibinitdelim J\bibinitperiod},
+      }}%
+      {{hash=LX}{%
+         family={Li},
+         familyi={L\bibinitperiod},
+         given={Xiaodong},
+         giveni={X\bibinitperiod},
+      }}%
+      {{hash=MY}{%
+         family={Ma},
+         familyi={M\bibinitperiod},
+         given={Yi},
+         giveni={Y\bibinitperiod},
+      }}%
+      {{hash=WJ}{%
+         family={Wright},
+         familyi={W\bibinitperiod},
+         given={John},
+         giveni={J\bibinitperiod},
+      }}%
+    }
+    \strng{namehash}{CEJ+1}
+    \strng{fullhash}{CEJLXMYWJ1}
+    \field{labelnamesource}{author}
+    \field{labeltitlesource}{title}
+    \verb{eprint}
+    \verb 0912.3599
+    \endverb
+    \field{title}{Robust Principal Component Analysis?}
+    \field{eprinttype}{arXiv}
+    \field{eprintclass}{cs.IT}
+    \field{year}{2009}
+  \endentry
+\enddatalist
+\endinput
