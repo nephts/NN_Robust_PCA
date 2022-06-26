@@ -10,8 +10,8 @@ Model and training data generation can be found in `Code`. For comparison, the p
 - [NumPy](https://numpy.org/)  
 - [Tensorflow](https://www.tensorflow.org/)  
 
-Eric Brunner (eric.brunner@physik.uni-freiburg.de)
-Simon Beyer
-Aron Distelzweig
-Mirko Grimm
+Eric Brunner (eric.brunner@physik.uni-freiburg.de),
+Simon Beyer,
+Aron Distelzweig,
+Mirko Grimm,
 Bastian Schnitzer
