@@ -11,3 +11,7 @@ Model and training data generation can be found in `Code`. For comparison, the p
 - [Tensorflow](https://www.tensorflow.org/)  
 
 Eric Brunner (eric.brunner@physik.uni-freiburg.de)
+Simon Beyer
+Aron Distelzweig
+Mirko Grimm
+Bastian Schnitzer
